@@ -318,6 +318,32 @@ class Qimai_Intside_Tool:
         else:
             return 0
 
+    def lost_keyword_calc(self, appid, start_date, end_date):
+        keyword_history_data = Get_App_Keyword(appid).get_keywordHistory_rank(self.data_info, start_date, end_date)
+        lost_keyword_days = 0  # 掉词天数；
+        if keyword_history_data['msg'] == '成功':
+            for i in keyword_history_data['data']['list']:
+                if i['name'] == '排名':
+                    len_list_rank = []
+                    for x in range(len(i['data'])):
+                        if x != (len(i['data']) - 1):  # 最后一个是获取数据的时间，不要；
+                            len_list_rank.append(str(i['data'][x][1]))
+                    # 开始实际计算；
+                    while len(len_list_rank) > 0:
+                        if len_list_rank[0] == 'None':
+                            del len_list_rank[0]
+                        else:
+                            # 排除了前面全无排名的情况；
+                            for x in range(len(len_list_rank)):
+                                # 开始判断排名；
+                                if len_list_rank[x] == 'None':
+                                    lost_keyword_days += 1
+                            break  # 运行完跳出死循环；
+
+        # 返回数据；
+        # print('当前第【%s】个词【%s】在%s至%s落榜【%s】天' % (num, keyword, start_date, end_date, luo_keyword_time))
+        return lost_keyword_days
+
 # 常用的自定义参数；
 class Qimai_Diy_Var:
     def __init__(self, country='cn', rank_type='all', version='ios12', device='iphone', search_type='all', brand='all', day=1, appRankShow=1, subclass='all', simple=1, rankEchartType=1, rankType='day', run_time=datetime.date.today(), status=6, keyword_hot_start=4605, typec='day', star='five', delete=-1, orderType='time', commentType='default', genre_type=36, status_type=3, clear_type=1, filter='offline', search_word='', export_type='rank_clear_words', sort_field='beforeClearNum', sort_type='desc', option=4, app_status_str='all', app_status_sdate='', app_status_edate='', app_status_order='', app_status_sort='', preOrder_order=1, change_inc=0, minResult='', maxResult='', minHints='', maxHints='', minPopular='', maxPopular='', top_history='all', lost_sort='out_time'):
@@ -525,6 +551,13 @@ class Get_App_Keyword(Qimai_Diy_Var):
         res = session.get(url, headers=headers)
         self.app_AnalysisDataKeyword = res.json()
         return self.app_AnalysisDataKeyword
+
+    def get_keywordHistory_rank(self, keyword, start_date, end_date):
+        word_id = Get_Keyword_Info(keyword).get_keyword_wordID()
+        url = 'https://api.qimai.cn/app/keywordHistory?version=%s&device=%s&country=%s&appid=%s&day=%s&sdate=%s&edate=%s&word_id=%s&word=%s' %(self.version, self.device, self.country, self.appid, self.day, start_date, end_date, word_id, keyword)
+        res = session.get(url, headers=headers)
+        self.app_keywordHistor_data = res.json()
+        return self.app_keywordHistor_data
 
     def get_keywordDetail_to_df(self):
         self.get_keywordDetail()
