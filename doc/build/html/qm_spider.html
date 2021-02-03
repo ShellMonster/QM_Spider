@@ -1,0 +1,822 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="Python" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>qm_spider package &mdash; Qm_Spider 0.0.32 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="qm_spider" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Qm_Spider
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">qm_spider</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">qm_spider package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-qm_spider.asm_spider">qm_spider.asm_spider module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-qm_spider.email_py">qm_spider.email_py module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-qm_spider.multiprocessing_py">qm_spider.multiprocessing_py module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-qm_spider.pyecharts_plot">qm_spider.pyecharts_plot module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-qm_spider.threading_py">qm_spider.threading_py module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-qm_spider.top_keyword">qm_spider.top_keyword module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-qm_spider">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Qm_Spider</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="modules.html">qm_spider</a> &raquo;</li>
+        
+      <li>qm_spider package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/qm_spider.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="qm-spider-package">
+<h1>qm_spider package<a class="headerlink" href="#qm-spider-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-qm_spider.asm_spider">
+<span id="qm-spider-asm-spider-module"></span><h2>qm_spider.asm_spider module<a class="headerlink" href="#module-qm_spider.asm_spider" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="qm_spider.asm_spider.Get_ASM_Bill">
+<em class="property">class </em><code class="sig-prename descclassname">qm_spider.asm_spider.</code><code class="sig-name descname">Get_ASM_Bill</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">accountName</span></em>, <em class="sig-param"><span class="n">accountPwd</span></em>, <em class="sig-param"><span class="n">start_date</span></em>, <em class="sig-param"><span class="n">end_date</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.asm_spider.Get_ASM_Bill" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#qm_spider.asm_spider.Get_ASM_Consume" title="qm_spider.asm_spider.Get_ASM_Consume"><code class="xref py py-class docutils literal notranslate"><span class="pre">qm_spider.asm_spider.Get_ASM_Consume</span></code></a></p>
+<dl class="py method">
+<dt id="qm_spider.asm_spider.Get_ASM_Bill.asm_bill">
+<code class="sig-name descname">asm_bill</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.asm_spider.Get_ASM_Bill.asm_bill" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="qm_spider.asm_spider.Get_ASM_Consume">
+<em class="property">class </em><code class="sig-prename descclassname">qm_spider.asm_spider.</code><code class="sig-name descname">Get_ASM_Consume</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">accountName</span></em>, <em class="sig-param"><span class="n">accountPwd</span></em>, <em class="sig-param"><span class="n">X_Apple_Widget_Key</span><span class="o">=</span><span class="default_value">'a01459d797984726ee0914a7097e53fad42b70e1f08d09294d14523a1d4f61e1'</span></em>, <em class="sig-param"><span class="n">file_name</span><span class="o">=</span><span class="default_value">'ASM-可用余额存取表.csv'</span></em>, <em class="sig-param"><span class="n">file_path</span><span class="o">=</span><span class="default_value">'./'</span></em>, <em class="sig-param"><span class="n">push_token</span><span class="o">=</span><span class="default_value">'https://oapi.dingtalk.com/robot/send?access_token=0dbd8b6b14b0aca04e7f5ea8367d43522d3fc79eaff519a0d7ee3509cfe70e18'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.asm_spider.Get_ASM_Consume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="qm_spider.asm_spider.Get_ASM_Consume.asm_consume">
+<code class="sig-name descname">asm_consume</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.asm_spider.Get_ASM_Consume.asm_consume" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.asm_spider.Get_ASM_Consume.asm_login">
+<code class="sig-name descname">asm_login</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.asm_spider.Get_ASM_Consume.asm_login" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.asm_spider.Get_ASM_Consume.clear_trash_file">
+<code class="sig-name descname">clear_trash_file</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.asm_spider.Get_ASM_Consume.clear_trash_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-qm_spider.email_py">
+<span id="qm-spider-email-py-module"></span><h2>qm_spider.email_py module<a class="headerlink" href="#module-qm_spider.email_py" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="qm_spider.email_py.Send_Mail">
+<em class="property">class </em><code class="sig-prename descclassname">qm_spider.email_py.</code><code class="sig-name descname">Send_Mail</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">subject</span></em>, <em class="sig-param"><span class="n">mail_text</span></em>, <em class="sig-param"><span class="n">send_user</span></em>, <em class="sig-param"><span class="n">send_userpwd</span></em>, <em class="sig-param"><span class="n">receivers</span><span class="o">=</span><span class="default_value">'ctrlf4&#64;yeah.net'</span></em>, <em class="sig-param"><span class="n">file_path</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">from_user</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">cc</span><span class="o">=</span><span class="default_value">()</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.email_py.Send_Mail" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="qm_spider.email_py.Send_Mail.send_qm_mail">
+<code class="sig-name descname">send_qm_mail</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.email_py.Send_Mail.send_qm_mail" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-qm_spider.multiprocessing_py">
+<span id="qm-spider-multiprocessing-py-module"></span><h2>qm_spider.multiprocessing_py module<a class="headerlink" href="#module-qm_spider.multiprocessing_py" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="qm_spider.multiprocessing_py.multiprocessing_run">
+<code class="sig-prename descclassname">qm_spider.multiprocessing_py.</code><code class="sig-name descname">multiprocessing_run</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">appid</span></em>, <em class="sig-param"><span class="n">keyword_hot_start</span></em>, <em class="sig-param"><span class="n">start_time</span></em>, <em class="sig-param"><span class="n">end_time</span></em>, <em class="sig-param"><span class="n">file_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.multiprocessing_py.multiprocessing_run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="qm_spider.multiprocessing_py.top_keyword_multiprocessing">
+<code class="sig-prename descclassname">qm_spider.multiprocessing_py.</code><code class="sig-name descname">top_keyword_multiprocessing</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">appid_list</span></em>, <em class="sig-param"><span class="n">keyword_hot_start</span></em>, <em class="sig-param"><span class="n">start_time</span></em>, <em class="sig-param"><span class="n">end_time</span></em>, <em class="sig-param"><span class="n">file_path</span><span class="o">=</span><span class="default_value">'./'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.multiprocessing_py.top_keyword_multiprocessing" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-qm_spider.pyecharts_plot">
+<span id="qm-spider-pyecharts-plot-module"></span><h2>qm_spider.pyecharts_plot module<a class="headerlink" href="#module-qm_spider.pyecharts_plot" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="qm_spider.pyecharts_plot.Bar_Py">
+<em class="property">class </em><code class="sig-prename descclassname">qm_spider.pyecharts_plot.</code><code class="sig-name descname">Bar_Py</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">title</span></em>, <em class="sig-param"><span class="n">x_value</span></em>, <em class="sig-param"><span class="n">y_name</span></em>, <em class="sig-param"><span class="n">y_value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.pyecharts_plot.Bar_Py" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#qm_spider.pyecharts_plot.Pyecharts_Var" title="qm_spider.pyecharts_plot.Pyecharts_Var"><code class="xref py py-class docutils literal notranslate"><span class="pre">qm_spider.pyecharts_plot.Pyecharts_Var</span></code></a></p>
+<dl class="py method">
+<dt id="qm_spider.pyecharts_plot.Bar_Py.bar_render_air">
+<code class="sig-name descname">bar_render_air</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.pyecharts_plot.Bar_Py.bar_render_air" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="qm_spider.pyecharts_plot.Line_Py">
+<em class="property">class </em><code class="sig-prename descclassname">qm_spider.pyecharts_plot.</code><code class="sig-name descname">Line_Py</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">title</span></em>, <em class="sig-param"><span class="n">x_value</span></em>, <em class="sig-param"><span class="n">y_name</span></em>, <em class="sig-param"><span class="n">y_value</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.pyecharts_plot.Line_Py" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#qm_spider.pyecharts_plot.Pyecharts_Var" title="qm_spider.pyecharts_plot.Pyecharts_Var"><code class="xref py py-class docutils literal notranslate"><span class="pre">qm_spider.pyecharts_plot.Pyecharts_Var</span></code></a></p>
+<dl class="py method">
+<dt id="qm_spider.pyecharts_plot.Line_Py.line_render_air">
+<code class="sig-name descname">line_render_air</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.pyecharts_plot.Line_Py.line_render_air" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.pyecharts_plot.Line_Py.line_render_qimai">
+<code class="sig-name descname">line_render_qimai</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.pyecharts_plot.Line_Py.line_render_qimai" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="qm_spider.pyecharts_plot.Pyecharts_Var">
+<em class="property">class </em><code class="sig-prename descclassname">qm_spider.pyecharts_plot.</code><code class="sig-name descname">Pyecharts_Var</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">title</span></em>, <em class="sig-param"><span class="n">x_value</span></em>, <em class="sig-param"><span class="n">y_name</span></em>, <em class="sig-param"><span class="n">y_value</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">subtitle</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">is_symbol_show</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">line_width</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">is_show</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">color_list</span><span class="o">=</span><span class="default_value">'#00b088', '#f76b61', '#ffb55d', '#8470ff', '#00a2ff', '#ffe400', '#11d2c2', '#c263f9'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.pyecharts_plot.Pyecharts_Var" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="qm_spider.pyecharts_plot.Pyecharts_Var.render_to_png">
+<code class="sig-name descname">render_to_png</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">c</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.pyecharts_plot.Pyecharts_Var.render_to_png" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-qm_spider.threading_py">
+<span id="qm-spider-threading-py-module"></span><h2>qm_spider.threading_py module<a class="headerlink" href="#module-qm_spider.threading_py" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="qm_spider.threading_py.Top_Keyword_Thread">
+<em class="property">class </em><code class="sig-prename descclassname">qm_spider.threading_py.</code><code class="sig-name descname">Top_Keyword_Thread</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">threadID</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.threading_py.Top_Keyword_Thread" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">threading.Thread</span></code></p>
+<dl class="py method">
+<dt id="qm_spider.threading_py.Top_Keyword_Thread.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.threading_py.Top_Keyword_Thread.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method representing the thread's activity.</p>
+<p>You may override this method in a subclass. The standard run() method
+invokes the callable object passed to the object's constructor as the
+target argument, if any, with sequential and keyword arguments taken
+from the args and kwargs arguments, respectively.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="qm_spider.threading_py.Top_Multiple_Keyword_Thread">
+<em class="property">class </em><code class="sig-prename descclassname">qm_spider.threading_py.</code><code class="sig-name descname">Top_Multiple_Keyword_Thread</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">appid_list</span></em>, <em class="sig-param"><span class="n">keyword_hot_start</span></em>, <em class="sig-param"><span class="n">start_time</span></em>, <em class="sig-param"><span class="n">end_time</span></em>, <em class="sig-param"><span class="n">file_path</span><span class="o">=</span><span class="default_value">'./'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.threading_py.Top_Multiple_Keyword_Thread" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="qm_spider.threading_py.Top_Multiple_Keyword_Thread.multiple_Thread_run">
+<code class="sig-name descname">multiple_Thread_run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.threading_py.Top_Multiple_Keyword_Thread.multiple_Thread_run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-qm_spider.top_keyword">
+<span id="qm-spider-top-keyword-module"></span><h2>qm_spider.top_keyword module<a class="headerlink" href="#module-qm_spider.top_keyword" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="qm_spider.top_keyword.Get_Multiple_Top_Keyword">
+<em class="property">class </em><code class="sig-prename descclassname">qm_spider.top_keyword.</code><code class="sig-name descname">Get_Multiple_Top_Keyword</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">appid_list</span></em>, <em class="sig-param"><span class="n">keyword_hot_start</span></em>, <em class="sig-param"><span class="n">start_time</span></em>, <em class="sig-param"><span class="n">end_time</span></em>, <em class="sig-param"><span class="n">file_path</span><span class="o">=</span><span class="default_value">'./'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.top_keyword.Get_Multiple_Top_Keyword" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="qm_spider.top_keyword.Get_Top_Keyword">
+<em class="property">class </em><code class="sig-prename descclassname">qm_spider.top_keyword.</code><code class="sig-name descname">Get_Top_Keyword</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">appid</span></em>, <em class="sig-param"><span class="n">keyword_hot_start</span></em>, <em class="sig-param"><span class="n">start_time</span></em>, <em class="sig-param"><span class="n">end_time</span></em>, <em class="sig-param"><span class="n">keyword_hot_end</span><span class="o">=</span><span class="default_value">150000</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.top_keyword.Get_Top_Keyword" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="qm_spider.top_keyword.Get_Top_Keyword.df_to_excel">
+<code class="sig-name descname">df_to_excel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span><span class="o">=</span><span class="default_value">'./'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.top_keyword.Get_Top_Keyword.df_to_excel" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.top_keyword.Get_Top_Keyword.get_all_top">
+<code class="sig-name descname">get_all_top</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.top_keyword.Get_Top_Keyword.get_all_top" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-qm_spider">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-qm_spider" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="qm_spider.DingDing_Push">
+<em class="property">class </em><code class="sig-prename descclassname">qm_spider.</code><code class="sig-name descname">DingDing_Push</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">push_title</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">push_status</span><span class="o">=</span><span class="default_value">'执行成功'</span></em>, <em class="sig-param"><span class="n">now_time</span><span class="o">=</span><span class="default_value">'2021-01-29 14:01:06'</span></em>, <em class="sig-param"><span class="n">push_url</span><span class="o">=</span><span class="default_value">'https://oapi.dingtalk.com/robot/send?access_token=f3a590b8c5f4c4777fe0f217067f15132091bff53e2a2143a5daa981d795159d'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.DingDing_Push" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="qm_spider.DingDing_Push.app_args_push">
+<code class="sig-name descname">app_args_push</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.DingDing_Push.app_args_push" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.DingDing_Push.app_rank_abnormal_push">
+<code class="sig-name descname">app_rank_abnormal_push</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.DingDing_Push.app_rank_abnormal_push" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.DingDing_Push.status_push">
+<code class="sig-name descname">status_push</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.DingDing_Push.status_push" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="qm_spider.Get_App_Appinfo">
+<em class="property">class </em><code class="sig-prename descclassname">qm_spider.</code><code class="sig-name descname">Get_App_Appinfo</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">appid</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_Appinfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#qm_spider.Qimai_Diy_Var" title="qm_spider.Qimai_Diy_Var"><code class="xref py py-class docutils literal notranslate"><span class="pre">qm_spider.Qimai_Diy_Var</span></code></a></p>
+<dl class="py method">
+<dt id="qm_spider.Get_App_Appinfo.get_appinfo">
+<code class="sig-name descname">get_appinfo</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_Appinfo.get_appinfo" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Get_App_Appinfo.get_subname">
+<code class="sig-name descname">get_subname</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_Appinfo.get_subname" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="qm_spider.Get_App_Comment">
+<em class="property">class </em><code class="sig-prename descclassname">qm_spider.</code><code class="sig-name descname">Get_App_Comment</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">appid</span></em>, <em class="sig-param"><span class="n">start_time</span></em>, <em class="sig-param"><span class="n">end_time</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_Comment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#qm_spider.Qimai_Diy_Var" title="qm_spider.Qimai_Diy_Var"><code class="xref py py-class docutils literal notranslate"><span class="pre">qm_spider.Qimai_Diy_Var</span></code></a></p>
+<dl class="py method">
+<dt id="qm_spider.Get_App_Comment.get_Star_commentRateNum">
+<code class="sig-name descname">get_Star_commentRateNum</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">star_value</span><span class="o">=</span><span class="default_value">'五星'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_Comment.get_Star_commentRateNum" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Get_App_Comment.get_all_commentRateNum">
+<code class="sig-name descname">get_all_commentRateNum</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_Comment.get_all_commentRateNum" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Get_App_Comment.get_comment">
+<code class="sig-name descname">get_comment</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_Comment.get_comment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Get_App_Comment.get_commentNum">
+<code class="sig-name descname">get_commentNum</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_Comment.get_commentNum" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Get_App_Comment.get_commentRateNum">
+<code class="sig-name descname">get_commentRateNum</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_Comment.get_commentRateNum" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="qm_spider.Get_App_Keyword">
+<em class="property">class </em><code class="sig-prename descclassname">qm_spider.</code><code class="sig-name descname">Get_App_Keyword</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">appid</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_Keyword" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#qm_spider.Qimai_Diy_Var" title="qm_spider.Qimai_Diy_Var"><code class="xref py py-class docutils literal notranslate"><span class="pre">qm_spider.Qimai_Diy_Var</span></code></a></p>
+<dl class="py method">
+<dt id="qm_spider.Get_App_Keyword.app_cover_regular">
+<code class="sig-name descname">app_cover_regular</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_Keyword.app_cover_regular" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Get_App_Keyword.get_AnalysisDataKeyword">
+<code class="sig-name descname">get_AnalysisDataKeyword</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start_time</span></em>, <em class="sig-param"><span class="n">end_time</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_Keyword.get_AnalysisDataKeyword" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Get_App_Keyword.get_keywordDetail">
+<code class="sig-name descname">get_keywordDetail</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_Keyword.get_keywordDetail" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Get_App_Keyword.get_keywordDetail_to_df">
+<code class="sig-name descname">get_keywordDetail_to_df</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_Keyword.get_keywordDetail_to_df" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Get_App_Keyword.get_keywordSummary">
+<code class="sig-name descname">get_keywordSummary</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_Keyword.get_keywordSummary" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="qm_spider.Get_App_Offline_List">
+<em class="property">class </em><code class="sig-prename descclassname">qm_spider.</code><code class="sig-name descname">Get_App_Offline_List</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start_time</span></em>, <em class="sig-param"><span class="n">end_time</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_Offline_List" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#qm_spider.Qimai_Diy_Var" title="qm_spider.Qimai_Diy_Var"><code class="xref py py-class docutils literal notranslate"><span class="pre">qm_spider.Qimai_Diy_Var</span></code></a></p>
+<dl class="py method">
+<dt id="qm_spider.Get_App_Offline_List.get_app_offline">
+<code class="sig-name descname">get_app_offline</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_Offline_List.get_app_offline" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="qm_spider.Get_App_Rank">
+<em class="property">class </em><code class="sig-prename descclassname">qm_spider.</code><code class="sig-name descname">Get_App_Rank</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">appid</span></em>, <em class="sig-param"><span class="n">start_time</span></em>, <em class="sig-param"><span class="n">end_time</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_Rank" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#qm_spider.Qimai_Diy_Var" title="qm_spider.Qimai_Diy_Var"><code class="xref py py-class docutils literal notranslate"><span class="pre">qm_spider.Qimai_Diy_Var</span></code></a></p>
+<dl class="py method">
+<dt id="qm_spider.Get_App_Rank.all_rank">
+<code class="sig-name descname">all_rank</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_Rank.all_rank" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Get_App_Rank.clear_rank">
+<code class="sig-name descname">clear_rank</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_Rank.clear_rank" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Get_App_Rank.get_rank_info">
+<code class="sig-name descname">get_rank_info</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_Rank.get_rank_info" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="qm_spider.Get_App_Recommend">
+<em class="property">class </em><code class="sig-prename descclassname">qm_spider.</code><code class="sig-name descname">Get_App_Recommend</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">appid</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_Recommend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#qm_spider.Qimai_Diy_Var" title="qm_spider.Qimai_Diy_Var"><code class="xref py py-class docutils literal notranslate"><span class="pre">qm_spider.Qimai_Diy_Var</span></code></a></p>
+<dl class="py method">
+<dt id="qm_spider.Get_App_Recommend.featured_match">
+<code class="sig-name descname">featured_match</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_Recommend.featured_match" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Get_App_Recommend.get_app_engagement">
+<code class="sig-name descname">get_app_engagement</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start_time</span></em>, <em class="sig-param"><span class="n">end_time</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_Recommend.get_app_engagement" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Get_App_Recommend.get_app_featured">
+<code class="sig-name descname">get_app_featured</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_Recommend.get_app_featured" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="qm_spider.Get_App_SamePubApp">
+<em class="property">class </em><code class="sig-prename descclassname">qm_spider.</code><code class="sig-name descname">Get_App_SamePubApp</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">appid</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_SamePubApp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#qm_spider.Get_App_Appinfo" title="qm_spider.Get_App_Appinfo"><code class="xref py py-class docutils literal notranslate"><span class="pre">qm_spider.Get_App_Appinfo</span></code></a>, <a class="reference internal" href="#qm_spider.Qimai_Diy_Var" title="qm_spider.Qimai_Diy_Var"><code class="xref py py-class docutils literal notranslate"><span class="pre">qm_spider.Qimai_Diy_Var</span></code></a></p>
+<dl class="py method">
+<dt id="qm_spider.Get_App_SamePubApp.get_app_genName">
+<code class="sig-name descname">get_app_genName</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_SamePubApp.get_app_genName" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Get_App_SamePubApp.get_samePubApp">
+<code class="sig-name descname">get_samePubApp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_SamePubApp.get_samePubApp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Get_App_SamePubApp.samePubApp_sorce">
+<code class="sig-name descname">samePubApp_sorce</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_SamePubApp.samePubApp_sorce" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="qm_spider.Get_App_Status">
+<em class="property">class </em><code class="sig-prename descclassname">qm_spider.</code><code class="sig-name descname">Get_App_Status</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">appid</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_Status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#qm_spider.Qimai_Diy_Var" title="qm_spider.Qimai_Diy_Var"><code class="xref py py-class docutils literal notranslate"><span class="pre">qm_spider.Qimai_Diy_Var</span></code></a></p>
+<dl class="py method">
+<dt id="qm_spider.Get_App_Status.get_all_appStatusList">
+<code class="sig-name descname">get_all_appStatusList</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_Status.get_all_appStatusList" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Get_App_Status.get_new_status_info">
+<code class="sig-name descname">get_new_status_info</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_Status.get_new_status_info" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Get_App_Status.get_old_status_info">
+<code class="sig-name descname">get_old_status_info</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_Status.get_old_status_info" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Get_App_Status.get_status_appStatusList">
+<code class="sig-name descname">get_status_appStatusList</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_App_Status.get_status_appStatusList" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="qm_spider.Get_Clear_Keyword_List">
+<em class="property">class </em><code class="sig-prename descclassname">qm_spider.</code><code class="sig-name descname">Get_Clear_Keyword_List</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start_time</span></em>, <em class="sig-param"><span class="n">end_time</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_Clear_Keyword_List" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#qm_spider.Qimai_Diy_Var" title="qm_spider.Qimai_Diy_Var"><code class="xref py py-class docutils literal notranslate"><span class="pre">qm_spider.Qimai_Diy_Var</span></code></a></p>
+<dl class="py method">
+<dt id="qm_spider.Get_Clear_Keyword_List.get_clear_keyword">
+<code class="sig-name descname">get_clear_keyword</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_Clear_Keyword_List.get_clear_keyword" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="qm_spider.Get_Clear_Rank_List">
+<em class="property">class </em><code class="sig-prename descclassname">qm_spider.</code><code class="sig-name descname">Get_Clear_Rank_List</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start_time</span></em>, <em class="sig-param"><span class="n">end_time</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_Clear_Rank_List" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#qm_spider.Qimai_Diy_Var" title="qm_spider.Qimai_Diy_Var"><code class="xref py py-class docutils literal notranslate"><span class="pre">qm_spider.Qimai_Diy_Var</span></code></a></p>
+<dl class="py method">
+<dt id="qm_spider.Get_Clear_Rank_List.get_clear_rank">
+<code class="sig-name descname">get_clear_rank</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_Clear_Rank_List.get_clear_rank" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="qm_spider.Get_FreePaidGross_RankList">
+<em class="property">class </em><code class="sig-prename descclassname">qm_spider.</code><code class="sig-name descname">Get_FreePaidGross_RankList</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">snapshot</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_FreePaidGross_RankList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#qm_spider.Qimai_Diy_Var" title="qm_spider.Qimai_Diy_Var"><code class="xref py py-class docutils literal notranslate"><span class="pre">qm_spider.Qimai_Diy_Var</span></code></a></p>
+<dl class="py method">
+<dt id="qm_spider.Get_FreePaidGross_RankList.get_freeRank_list">
+<code class="sig-name descname">get_freeRank_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_FreePaidGross_RankList.get_freeRank_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Get_FreePaidGross_RankList.get_grossRank_list">
+<code class="sig-name descname">get_grossRank_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_FreePaidGross_RankList.get_grossRank_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Get_FreePaidGross_RankList.get_paidRank_list">
+<code class="sig-name descname">get_paidRank_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_FreePaidGross_RankList.get_paidRank_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Get_FreePaidGross_RankList.get_updateTime_list">
+<code class="sig-name descname">get_updateTime_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_FreePaidGross_RankList.get_updateTime_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="qm_spider.Get_Keyword_HintsRank">
+<em class="property">class </em><code class="sig-prename descclassname">qm_spider.</code><code class="sig-name descname">Get_Keyword_HintsRank</code><a class="headerlink" href="#qm_spider.Get_Keyword_HintsRank" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#qm_spider.Qimai_Diy_Var" title="qm_spider.Qimai_Diy_Var"><code class="xref py py-class docutils literal notranslate"><span class="pre">qm_spider.Qimai_Diy_Var</span></code></a></p>
+<dl class="py method">
+<dt id="qm_spider.Get_Keyword_HintsRank.get_hints_rank">
+<code class="sig-name descname">get_hints_rank</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_Keyword_HintsRank.get_hints_rank" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="qm_spider.Get_Keyword_Info">
+<em class="property">class </em><code class="sig-prename descclassname">qm_spider.</code><code class="sig-name descname">Get_Keyword_Info</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">keyword</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_Keyword_Info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#qm_spider.Qimai_Diy_Var" title="qm_spider.Qimai_Diy_Var"><code class="xref py py-class docutils literal notranslate"><span class="pre">qm_spider.Qimai_Diy_Var</span></code></a></p>
+<dl class="py method">
+<dt id="qm_spider.Get_Keyword_Info.get_keyword_hints">
+<code class="sig-name descname">get_keyword_hints</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_Keyword_Info.get_keyword_hints" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Get_Keyword_Info.get_keyword_results">
+<code class="sig-name descname">get_keyword_results</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_Keyword_Info.get_keyword_results" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Get_Keyword_Info.get_keyword_search">
+<code class="sig-name descname">get_keyword_search</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_Keyword_Info.get_keyword_search" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Get_Keyword_Info.get_keyword_wordID">
+<code class="sig-name descname">get_keyword_wordID</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_Keyword_Info.get_keyword_wordID" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Get_Keyword_Info.get_keyword_wordinfo">
+<code class="sig-name descname">get_keyword_wordinfo</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_Keyword_Info.get_keyword_wordinfo" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Get_Keyword_Info.get_top_to_df">
+<code class="sig-name descname">get_top_to_df</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">top_num</span><span class="o">=</span><span class="default_value">100</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_Keyword_Info.get_top_to_df" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="qm_spider.Get_Keyword_LoseNewDownUp_List">
+<em class="property">class </em><code class="sig-prename descclassname">qm_spider.</code><code class="sig-name descname">Get_Keyword_LoseNewDownUp_List</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">keyword</span></em>, <em class="sig-param"><span class="n">start_date</span><span class="o">=</span><span class="default_value">datetime.date(2021, 1, 29)</span></em>, <em class="sig-param"><span class="n">end_date</span><span class="o">=</span><span class="default_value">datetime.date(2021, 1, 29)</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_Keyword_LoseNewDownUp_List" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#qm_spider.Qimai_Diy_Var" title="qm_spider.Qimai_Diy_Var"><code class="xref py py-class docutils literal notranslate"><span class="pre">qm_spider.Qimai_Diy_Var</span></code></a></p>
+<dl class="py method">
+<dt id="qm_spider.Get_Keyword_LoseNewDownUp_List.get_lostApp_list">
+<code class="sig-name descname">get_lostApp_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_Keyword_LoseNewDownUp_List.get_lostApp_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Get_Keyword_LoseNewDownUp_List.get_newApp_list">
+<code class="sig-name descname">get_newApp_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_Keyword_LoseNewDownUp_List.get_newApp_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Get_Keyword_LoseNewDownUp_List.get_rankDown_list">
+<code class="sig-name descname">get_rankDown_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_Keyword_LoseNewDownUp_List.get_rankDown_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Get_Keyword_LoseNewDownUp_List.get_rankGoUp_list">
+<code class="sig-name descname">get_rankGoUp_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_Keyword_LoseNewDownUp_List.get_rankGoUp_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Get_Keyword_LoseNewDownUp_List.get_t10App_list">
+<code class="sig-name descname">get_t10App_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_Keyword_LoseNewDownUp_List.get_t10App_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="qm_spider.Get_PreOrder_AppList">
+<em class="property">class </em><code class="sig-prename descclassname">qm_spider.</code><code class="sig-name descname">Get_PreOrder_AppList</code><a class="headerlink" href="#qm_spider.Get_PreOrder_AppList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#qm_spider.Qimai_Diy_Var" title="qm_spider.Qimai_Diy_Var"><code class="xref py py-class docutils literal notranslate"><span class="pre">qm_spider.Qimai_Diy_Var</span></code></a></p>
+<dl class="py method">
+<dt id="qm_spider.Get_PreOrder_AppList.get_preOrder_applist">
+<code class="sig-name descname">get_preOrder_applist</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Get_PreOrder_AppList.get_preOrder_applist" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="qm_spider.Qimai_Diy_Var">
+<em class="property">class </em><code class="sig-prename descclassname">qm_spider.</code><code class="sig-name descname">Qimai_Diy_Var</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">country</span><span class="o">=</span><span class="default_value">'cn'</span></em>, <em class="sig-param"><span class="n">rank_type</span><span class="o">=</span><span class="default_value">'all'</span></em>, <em class="sig-param"><span class="n">version</span><span class="o">=</span><span class="default_value">'ios12'</span></em>, <em class="sig-param"><span class="n">device</span><span class="o">=</span><span class="default_value">'iphone'</span></em>, <em class="sig-param"><span class="n">search_type</span><span class="o">=</span><span class="default_value">'all'</span></em>, <em class="sig-param"><span class="n">brand</span><span class="o">=</span><span class="default_value">'all'</span></em>, <em class="sig-param"><span class="n">day</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">appRankShow</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">subclass</span><span class="o">=</span><span class="default_value">'all'</span></em>, <em class="sig-param"><span class="n">simple</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">rankEchartType</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">rankType</span><span class="o">=</span><span class="default_value">'day'</span></em>, <em class="sig-param"><span class="n">run_time</span><span class="o">=</span><span class="default_value">datetime.date(2021, 1, 29)</span></em>, <em class="sig-param"><span class="n">status</span><span class="o">=</span><span class="default_value">6</span></em>, <em class="sig-param"><span class="n">keyword_hot_start</span><span class="o">=</span><span class="default_value">4605</span></em>, <em class="sig-param"><span class="n">typec</span><span class="o">=</span><span class="default_value">'day'</span></em>, <em class="sig-param"><span class="n">star</span><span class="o">=</span><span class="default_value">'five'</span></em>, <em class="sig-param"><span class="n">delete</span><span class="o">=</span><span class="default_value">- 1</span></em>, <em class="sig-param"><span class="n">orderType</span><span class="o">=</span><span class="default_value">'time'</span></em>, <em class="sig-param"><span class="n">commentType</span><span class="o">=</span><span class="default_value">'default'</span></em>, <em class="sig-param"><span class="n">genre_type</span><span class="o">=</span><span class="default_value">36</span></em>, <em class="sig-param"><span class="n">status_type</span><span class="o">=</span><span class="default_value">3</span></em>, <em class="sig-param"><span class="n">clear_type</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">filter</span><span class="o">=</span><span class="default_value">'offline'</span></em>, <em class="sig-param"><span class="n">search_word</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">export_type</span><span class="o">=</span><span class="default_value">'rank_clear_words'</span></em>, <em class="sig-param"><span class="n">sort_field</span><span class="o">=</span><span class="default_value">'beforeClearNum'</span></em>, <em class="sig-param"><span class="n">sort_type</span><span class="o">=</span><span class="default_value">'desc'</span></em>, <em class="sig-param"><span class="n">option</span><span class="o">=</span><span class="default_value">4</span></em>, <em class="sig-param"><span class="n">app_status_str</span><span class="o">=</span><span class="default_value">'all'</span></em>, <em class="sig-param"><span class="n">app_status_sdate</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">app_status_edate</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">app_status_order</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">app_status_sort</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">preOrder_order</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">change_inc</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">minResult</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">maxResult</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">minHints</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">maxHints</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">minPopular</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">maxPopular</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">top_history</span><span class="o">=</span><span class="default_value">'all'</span></em>, <em class="sig-param"><span class="n">lost_sort</span><span class="o">=</span><span class="default_value">'out_time'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Qimai_Diy_Var" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="qm_spider.Qimai_Intside_Tool">
+<em class="property">class </em><code class="sig-prename descclassname">qm_spider.</code><code class="sig-name descname">Qimai_Intside_Tool</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data_info</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Qimai_Intside_Tool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="qm_spider.Qimai_Intside_Tool.new_rank_num">
+<code class="sig-name descname">new_rank_num</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rank_name</span><span class="o">=</span><span class="default_value">'总榜(免费)'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Qimai_Intside_Tool.new_rank_num" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Qimai_Intside_Tool.old_rank_num">
+<code class="sig-name descname">old_rank_num</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rank_name</span><span class="o">=</span><span class="default_value">'总榜(免费)'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Qimai_Intside_Tool.old_rank_num" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Qimai_Intside_Tool.rank_ios10_type">
+<code class="sig-name descname">rank_ios10_type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Qimai_Intside_Tool.rank_ios10_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="qm_spider.Qimai_Outside_Tool">
+<em class="property">class </em><code class="sig-prename descclassname">qm_spider.</code><code class="sig-name descname">Qimai_Outside_Tool</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Qimai_Outside_Tool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="qm_spider.Qimai_Outside_Tool.calc_interval_time">
+<code class="sig-name descname">calc_interval_time</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Qimai_Outside_Tool.calc_interval_time" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Qimai_Outside_Tool.calc_overlap_days">
+<code class="sig-name descname">calc_overlap_days</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s1</span></em>, <em class="sig-param"><span class="n">e1</span></em>, <em class="sig-param"><span class="n">s2</span></em>, <em class="sig-param"><span class="n">e2</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Qimai_Outside_Tool.calc_overlap_days" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Qimai_Outside_Tool.date_to_time">
+<code class="sig-name descname">date_to_time</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Qimai_Outside_Tool.date_to_time" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Qimai_Outside_Tool.get_month_time">
+<code class="sig-name descname">get_month_time</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Qimai_Outside_Tool.get_month_time" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Qimai_Outside_Tool.json_to_df">
+<code class="sig-name descname">json_to_df</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Qimai_Outside_Tool.json_to_df" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Qimai_Outside_Tool.list_to_df">
+<code class="sig-name descname">list_to_df</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Qimai_Outside_Tool.list_to_df" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Qimai_Outside_Tool.match_publisher_company">
+<code class="sig-name descname">match_publisher_company</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Qimai_Outside_Tool.match_publisher_company" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Qimai_Outside_Tool.match_str_chinese">
+<code class="sig-name descname">match_str_chinese</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Qimai_Outside_Tool.match_str_chinese" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Qimai_Outside_Tool.time_to_date">
+<code class="sig-name descname">time_to_date</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Qimai_Outside_Tool.time_to_date" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Qimai_Outside_Tool.trend_analysis">
+<code class="sig-name descname">trend_analysis</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Qimai_Outside_Tool.trend_analysis" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="qm_spider.Qimai_Outside_Tool.unix_time">
+<code class="sig-name descname">unix_time</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Qimai_Outside_Tool.unix_time" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="qm_spider.Sing_Qimai">
+<em class="property">class </em><code class="sig-prename descclassname">qm_spider.</code><code class="sig-name descname">Sing_Qimai</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">user_id</span></em>, <em class="sig-param"><span class="n">user_pwd</span></em><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Sing_Qimai" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="qm_spider.Sing_Qimai.login_qm">
+<code class="sig-name descname">login_qm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qm_spider.Sing_Qimai.login_qm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="modules.html" class="btn btn-neutral float-left" title="qm_spider" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, 道长.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
