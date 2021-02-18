@@ -1,11 +1,13 @@
 from qm_spider import *
 from pyecharts.faker import Faker
 from pyecharts import options as opts
-from pyecharts.charts import Bar, Grid, Line, Page, Pie, Timeline, Boxplot
+from pyecharts.charts import Bar, Grid, Line, Page, Pie, Timeline, Boxplot, WordCloud
 from pyecharts.commons.utils import JsCode
-from pyecharts.globals import ThemeType
+from pyecharts.globals import ThemeType, SymbolType
 from pyecharts.render import make_snapshot
 from snapshot_selenium import snapshot
+import jieba
+from collections import Counter
 
 
 # 画图基础通用参数；
@@ -194,4 +196,26 @@ class Bar_Py(Pyecharts_Var):
         for agr_data in self.args:
             c.add_yaxis(agr_data[0], agr_data[1])
         self.c_render = c
+        return c
+
+# 词云图；
+class WordCloud_Py:
+    def __init__(self, title, *args):
+        self.title = title
+        self.args = args
+
+    def jieba_cut(self):
+        word_data = re.sub('\W*', '', self.args[0])
+        word_list = jieba.cut(word_data)
+        self.word_cut_result = ','.join(word_list).split(',')
+        counter = Counter(self.word_cut_result)
+        self.word_dictionary = dict(counter)
+        self.word_tuple_result = counter.most_common()
+        return self.word_cut_result, self.word_dictionary, self.word_tuple_result
+
+    def wordcloud_render(self):
+        self.jieba_cut()
+        c = WordCloud()
+        c.add('', self.word_tuple_result, shape=SymbolType.DIAMOND)
+        c.set_global_opts(title_opts=opts.TitleOpts(title=self.title))
         return c

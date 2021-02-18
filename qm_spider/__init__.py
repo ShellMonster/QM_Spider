@@ -1,4 +1,4 @@
-import requests,datetime,time,warnings,json,calendar,math,os
+import requests,datetime,time,warnings,json,calendar,math,os,re
 from datetime import date
 from dateutil.relativedelta import relativedelta
 from pandas.io.json import json_normalize
@@ -45,6 +45,11 @@ headers = {
 
 # 钉钉推送；
 class DingDing_Push:
+    """
+        * 钉钉推送区；
+        * 可以自己修改推送token及标题等；
+        * 同时附带万能推送脚本，使用*args自定义；
+    """
     def __init__(self, push_title, *args, push_status='执行成功', now_time=str(datetime.datetime.now())[:19], push_url='https://oapi.dingtalk.com/robot/send?access_token=f3a590b8c5f4c4777fe0f217067f15132091bff53e2a2143a5daa981d795159d'):
         self.push_title = push_title
         self.push_status = push_status
@@ -98,6 +103,10 @@ class DingDing_Push:
 
 # 自动登录；
 class Sing_Qimai:
+    """
+        * 自动登录区；
+        * 目前仅支持七麦数据自动登录；
+    """
     def __init__(self, user_id, user_pwd):
         self.user_id = user_id
         self.user_pwd = user_pwd
@@ -113,6 +122,11 @@ class Sing_Qimai:
 
 # 计算七麦外的其他备用工具；
 class Qimai_Outside_Tool:
+    """
+        * 七麦接口外部的自定义工具区；
+        * 举例①：自动匹配是否包含中文；
+        * 举例②：自动匹配开发者账号是公司还是个人；
+    """
     def __init__(self, *args):
         self.data_info = args
 
@@ -296,6 +310,11 @@ class Qimai_Outside_Tool:
 
 # 计算七麦内的备用工具；
 class Qimai_Intside_Tool:
+    """
+        * 七麦接口内的一些通用处理规则；
+        * 举例①：匹配产品对应的榜单是免费还是付费；
+        * 举例②：匹配当前最新榜单榜位数值；
+    """
     def __init__(self, data_info):
         self.data_info = data_info
 
@@ -347,6 +366,11 @@ class Qimai_Intside_Tool:
 
 # 常用的自定义参数；
 class Qimai_Diy_Var:
+    """
+        * 便于其他类继承的通用参数区；
+        * 举例①：指定搜索接口的系统版本；
+        * 举例②：指定搜索的设备类型是iPad还是iPhone等；
+    """
     def __init__(self, country='cn', rank_type='all', version='ios12', device='iphone', search_type='all', brand='all', day=1, appRankShow=1, subclass='all', simple=1, rankEchartType=1, rankType='day', run_time=datetime.date.today(), status=6, keyword_hot_start=4605, typec='day', star='five', delete=-1, orderType='time', commentType='default', genre_type=36, status_type=3, clear_type=1, filter='offline', search_word='', export_type='rank_clear_words', sort_field='beforeClearNum', sort_type='desc', option=4, app_status_str='all', app_status_sdate='', app_status_edate='', app_status_order='', app_status_sort='', preOrder_order=1, change_inc=0, minResult='', maxResult='', minHints='', maxHints='', minPopular='', maxPopular='', top_history='all', lost_sort='out_time'):
         self.country = country
         self.rank_type = rank_type
@@ -412,6 +436,10 @@ class Get_App_Appinfo(Qimai_Diy_Var):
 
 # 获取榜单相关数据；
 class Get_App_Rank(Qimai_Diy_Var):
+    """
+        * 根据AppID及对应时间，获取产品榜单数值；
+        * 可获取子分类榜单；
+    """
     def __init__(self, appid, start_time, end_time):
         Qimai_Diy_Var.__init__(self)
         self.appid = appid
@@ -440,6 +468,11 @@ class Get_App_Rank(Qimai_Diy_Var):
 
 # 获取开发商相关数据；
 class Get_App_SamePubApp(Get_App_Appinfo, Qimai_Diy_Var):
+    """
+        * 获取开发商相关数据；
+        * 举例①：获取开发商名称；
+        * 举例②：获取开发商权重评分(写死的打分规则)；
+    """
     def __init__(self, appid):
         Get_App_Appinfo.__init__(self, appid)
         Qimai_Diy_Var.__init__(self)
@@ -473,6 +506,11 @@ class Get_App_SamePubApp(Get_App_Appinfo, Qimai_Diy_Var):
 
 # 获取关键词的相关数据；
 class Get_Keyword_Info(Qimai_Diy_Var):
+    """
+        * 获取关键词下相关数据；
+        * 举例①：获取关键词下产品信息；
+        * 举例②：获取关键词下联想词；
+    """
     def __init__(self, keyword):
         Qimai_Diy_Var.__init__(self)
         self.keyword = keyword
@@ -544,6 +582,11 @@ class Get_Keyword_Info(Qimai_Diy_Var):
 
 # 获取产品的关键词相关数据；
 class Get_App_Keyword(Qimai_Diy_Var):
+    """
+        * 获取App的关键词相关信息；
+        * 举例①：获取App的对应时间覆盖数据(默认当日)；
+        * 举例②：获取App不同日期的T3、T5数据；
+    """
     def __init__(self, appid):
         Qimai_Diy_Var.__init__(self)
         self.appid = appid
@@ -596,6 +639,11 @@ class Get_App_Keyword(Qimai_Diy_Var):
 
 # 获取产品评论的相关接口；
 class Get_App_Comment(Qimai_Diy_Var):
+    """
+        * 获取App的评论相关数据；
+        * 举例①：获取App每天的新增评论数；
+        * 举例②：获取App指定星级每天评论数据；
+    """
     def __init__(self, appid, start_time, end_time):
         Qimai_Diy_Var.__init__(self)
         self.appid = appid
@@ -645,6 +693,10 @@ class Get_App_Comment(Qimai_Diy_Var):
 
 # 获取清榜列表相关数据；
 class Get_Clear_Rank_List(Qimai_Diy_Var):
+    """
+        * 获取清榜列表相关数据；
+        * 举例①：获取当前清榜列表所有清榜产品相关数据；
+    """
     def __init__(self, start_time, end_time):
         Qimai_Diy_Var.__init__(self)
         self.start_time = start_time
@@ -664,6 +716,10 @@ class Get_Clear_Rank_List(Qimai_Diy_Var):
 
 # 获取清词列表相关数据；
 class Get_Clear_Keyword_List(Qimai_Diy_Var):
+    """
+        * 获取清词列表相关数据；
+        * 举例①：获取当前清词列表所有清词产品相关数据；
+    """
     def __init__(self, start_time, end_time):
         Qimai_Diy_Var.__init__(self)
         self.start_time = start_time
@@ -683,6 +739,10 @@ class Get_Clear_Keyword_List(Qimai_Diy_Var):
 
 # 获取下架产品列表相关数据；
 class Get_App_Offline_List(Qimai_Diy_Var):
+    """
+        * 获取下架列表相关数据；
+        * 举例①：获取当前下架列表所有下架产品相关数据；
+    """
     def __init__(self, start_time, end_time):
         Qimai_Diy_Var.__init__(self)
         self.start_time = start_time
@@ -702,6 +762,10 @@ class Get_App_Offline_List(Qimai_Diy_Var):
 
 # 获取预订App列表；
 class Get_PreOrder_AppList(Qimai_Diy_Var):
+    """
+        * 获取预订App列表相关数据；
+        * 举例①：获取当前预订列表所有预订产品相关数据；
+    """
     def __init__(self):
         Qimai_Diy_Var.__init__(self)
 
@@ -719,6 +783,11 @@ class Get_PreOrder_AppList(Qimai_Diy_Var):
 
 # 获取产品被精品推荐及上热搜情况列表；
 class Get_App_Recommend(Qimai_Diy_Var):
+    """
+        * 获取产品精品推荐及热搜列表相关数据；
+        * 举例①：获取当前被精品推荐所有数据；
+        * 举例②：获取当前被推荐上热搜的次数时间等；
+    """
     def __init__(self, appid):
         Qimai_Diy_Var.__init__(self)
         self.appid = appid
@@ -746,6 +815,11 @@ class Get_App_Recommend(Qimai_Diy_Var):
 
 # 获取App不同状态列表；
 class Get_App_Status(Qimai_Diy_Var):
+    """
+        * 获取App状态列表相关数据；
+        * 举例①：获取当前App所有清榜情况；
+        * 举例②：获取当前App所有下架情况；
+    """
     def __init__(self, appid):
         Qimai_Diy_Var.__init__(self)
         self.appid = appid
@@ -804,6 +878,10 @@ class Get_App_Status(Qimai_Diy_Var):
 
 # 封装指数排行榜接口；
 class Get_Keyword_HintsRank(Qimai_Diy_Var):
+    """
+        * 获取指数排行榜列表相关数据；
+        * 举例①：获取iPad指数排行榜数据；
+    """
     def __init__(self):
         Qimai_Diy_Var.__init__(self)
 
@@ -819,8 +897,12 @@ class Get_Keyword_HintsRank(Qimai_Diy_Var):
                 break
         return self.keyword_hintsRank_list
 
-# 封装关键词落词列表接口；
+# 封装关键词落词、新进、上升、下降列表接口；
 class Get_Keyword_LoseNewDownUp_List(Qimai_Diy_Var):
+    """
+        * 获取关键词下落榜、新进、上升、下降产品列表相关数据；
+        * 举例①：获取当前词落榜产品基本信息，落榜前排名等相关数据；
+    """
     def __init__(self, keyword, start_date=datetime.date.today(), end_date=datetime.date.today()):
         Qimai_Diy_Var.__init__(self)
         self.keyword = keyword
@@ -889,6 +971,10 @@ class Get_Keyword_LoseNewDownUp_List(Qimai_Diy_Var):
 
 # 获取免费、付费、畅销榜单产品列表；
 class Get_FreePaidGross_RankList(Qimai_Diy_Var):
+    """
+        * 获取免费、付费、畅销榜产品列表；
+        * 举例①：获取游戏畅销榜前100产品信息；
+    """
     def __init__(self, snapshot=''):
         Qimai_Diy_Var.__init__(self)
         self.snapshot = snapshot
@@ -942,6 +1028,10 @@ class Get_FreePaidGross_RankList(Qimai_Diy_Var):
 
 # 获取预估下载量及预估收入接口；
 class Get_AppDownRevenue_Data(Qimai_Diy_Var):
+    """
+        * 获取产品预估下载量及预估收入数据；
+        * 举例①：获取产品在某时间段内每日预估下载量数据；
+    """
     def __init__(self, appid, start_date, end_date):
         Qimai_Diy_Var.__init__(self)
         self.appid = appid
