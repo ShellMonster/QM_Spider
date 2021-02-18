@@ -36,6 +36,7 @@ warnings.filterwarnings("ignore")
 
 # 保持会话；
 session = requests.session()
+one_day = datetime.timedelta(days=1)
 
 # 请求头；
 headers = {
@@ -360,7 +361,6 @@ class Qimai_Diy_Var:
         self.rankEchartType = rankEchartType
         self.rankType = rankType
         self.run_time = run_time
-        self.one_day = datetime.timedelta(days=1)
         self.status = status
         self.keyword_hot_start = keyword_hot_start
         self.typec = typec
@@ -478,13 +478,23 @@ class Get_Keyword_Info(Qimai_Diy_Var):
         self.keyword = keyword
 
     def get_keyword_search(self):
-        url = 'https://api.qimai.cn/search/index?device=%s&country=%s&search=%s&version=%s&date=%s&search_type=%s&status=%s&edate=%s' %(self.device, self.country, self.keyword, self.version, self.run_time, self.search_type, self.status, self.run_time-self.one_day)
+        url = 'https://api.qimai.cn/search/index?device=%s&country=%s&search=%s&version=%s&date=%s&search_type=%s&status=%s&edate=%s' %(self.device, self.country, self.keyword, self.version, self.run_time, self.search_type, self.status, self.run_time-one_day)
+        headers = {
+            'origin': 'https://www.qimai.cn',
+            'referer': 'https://www.qimai.cn/',
+            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_1_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36 Edg/88.0.705.63'
+        }
         res = session.get(url, headers=headers)
         self.keyword_serch_index = res.json()
         return self.keyword_serch_index
 
     def get_keyword_wordinfo(self):
-        url = 'https://api.qimai.cn/search/getWordInfo?country=%s&device=%s&search=%s&version=%s&date=%s&search_type=%s&status=%s&edate=%s' % (self.country, self.device, self.keyword, self.version, self.run_time, self.search_type, self.status, self.run_time - self.one_day)
+        url = 'https://api.qimai.cn/search/getWordInfo?country=%s&device=%s&search=%s&version=%s&date=%s&search_type=%s&status=%s&edate=%s' % (self.country, self.device, self.keyword, self.version, self.run_time, self.search_type, self.status, self.run_time - one_day)
+        headers = {
+            'origin': 'https://www.qimai.cn',
+            'referer': 'https://www.qimai.cn/',
+            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_1_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36 Edg/88.0.705.63'
+        }
         res = session.get(url, headers=headers)
         self.keyword_WordInfo = res.json()
         return self.keyword_WordInfo
@@ -499,6 +509,12 @@ class Get_Keyword_Info(Qimai_Diy_Var):
         res = session.post(url, data=payload, headers=headers)
         self.keywordHistory_hints = res.json()
         return self.keywordHistory_hints
+
+    def get_hotSearch_data(self):
+        url = 'https://api.qimai.cn/engagement/historySearch?country=%s&version=%s&search_type=1&search=%s' %(self.country, self.version, self.keyword)
+        res = session.get(url, headers=headers)
+        self.keyword_hotSearch_data = res.json()
+        return self.keyword_hotSearch_data
 
     def get_top_to_df(self, top_num=100):
         self.get_keyword_search()
