@@ -1258,14 +1258,14 @@ class Get_Keyword_HintsRank(Qimai_Diy_Var):
         return self.keyword_hintsRank_list
 
 # 封装关键词落词、新进、上升、下降列表接口；
-class Get_Keyword_LoseNewDownUp_List(Qimai_Diy_Var, Get_Clear_Keyword_List):
+class Get_Keyword_LoseNewDownUp_List(Get_Clear_Keyword_List):
     """
         * 获取关键词下落榜、新进、上升、下降产品列表相关数据；
         * 举例①：获取当前词落榜产品基本信息，落榜前排名等相关数据；
         top_history: 历史排名，默认全部，可选进入过T10
     """
     def __init__(self, keyword, start_date=datetime.date.today(), end_date=datetime.date.today(), top_history='all'):
-        super(Get_Keyword_LoseNewDownUp_List, self).__init__()
+        super(Get_Keyword_LoseNewDownUp_List, self).__init__(start_date, end_date)
         self.keyword = keyword
         self.start_date = start_date
         self.end_date = end_date
