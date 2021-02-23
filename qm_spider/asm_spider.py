@@ -14,6 +14,7 @@ class Get_ASM_Consume:
         self.file_name = file_name
         self.file_path = file_path if file_path[-1]=='/' else file_path+'/'
         self.yes_file_path = '%s%s_%s' %(self.file_path, self.yesterday_date, self.file_name)
+        self.yes_yes_file_path = '%s%s_%s' %(self.file_path, self.yesterday_date-one_day, self.file_name)
         self.today_file_path = '%s%s_%s' %(self.file_path, self.today_date, self.file_name)
         self.push_token = push_token
 
@@ -114,7 +115,11 @@ class Get_ASM_Consume:
         res_status = self.asm_login()
         if '异常' not in res_status:
             os.system('rm -rf %s' % (self.today_file_path))
-            df = pd.read_csv('%s' % (self.yes_file_path), header=None)
+            try:
+                df = pd.read_csv('%s' % (self.yes_file_path), header=None)
+            except:
+                DingDing_Push('ASM异常推送告警', '### ASM余额监控-异常告警提示\n\n**提示内容：**当前读取前1日存储账单记录异常，已再向前1日读取存储，数据或出现偏移，请注意确认！', push_url=self.push_token).app_args_push()
+                df = pd.read_csv('%s' % (self.yes_yes_file_path), header=None)
 
             # 正式开始执行；
             run_num = 1

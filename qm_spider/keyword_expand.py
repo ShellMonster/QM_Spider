@@ -92,7 +92,7 @@ class Calc_Keyword_Expand:
                         try:
                             keyword_all_num = len(df[df['关键词'].str.contains(keyword)])  # 包含;
                         except:
-                            keyword_all_num = ''
+                            keyword_all_num = 0
                         df_old = pd.DataFrame({
                             '关键词': [keyword],
                             '排名': [keyword_rank],
