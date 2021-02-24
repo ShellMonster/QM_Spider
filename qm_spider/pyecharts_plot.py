@@ -6,7 +6,6 @@ from pyecharts.commons.utils import JsCode
 from pyecharts.globals import ThemeType, SymbolType
 from pyecharts.render import make_snapshot
 from snapshot_selenium import snapshot
-import jieba
 from collections import Counter
 
 
@@ -204,17 +203,21 @@ class WordCloud_Py:
         self.title = title
         self.args = args
 
-    def jieba_cut(self):
+    def jieba_cut(self, length_num=0):
         word_data = re.sub('\W*', '', self.args[0])
         word_list = jieba.cut(word_data)
         self.word_cut_result = ','.join(word_list).split(',')
         counter = Counter(self.word_cut_result)
+        if length_num > 0:
+            for key_info in list(counter.keys()):
+                if len(key_info) <= length_num:
+                    counter.pop(key_info)
         self.word_dictionary = dict(counter)
         self.word_tuple_result = counter.most_common()
         return self.word_cut_result, self.word_dictionary, self.word_tuple_result
 
-    def wordcloud_render(self):
-        self.jieba_cut()
+    def wordcloud_render(self, length_num=0):
+        self.jieba_cut(length_num)
         c = WordCloud()
         c.add('', self.word_tuple_result, shape=SymbolType.DIAMOND)
         c.set_global_opts(title_opts=opts.TitleOpts(title=self.title))

@@ -1,10 +1,11 @@
-import requests, datetime, time, warnings, json, calendar, math, os, re
+import requests, datetime, time, warnings, json, calendar, math, os, re, jieba, jieba.analyse, random
 from datetime import date
 from dateutil.relativedelta import relativedelta
 from pandas.io.json import json_normalize
 from urllib.parse import quote
 import pandas as pd
 import numpy as np
+from bs4 import BeautifulSoup
 from scipy.stats import norm, mstats
 warnings.filterwarnings("ignore")
 
@@ -36,9 +37,9 @@ warnings.filterwarnings("ignore")
 
 '''
 
-
 # 保持会话；
 session = requests.session()
+today_date = datetime.date.today()
 one_day = datetime.timedelta(days=1)
 
 # 请求头；
@@ -457,7 +458,7 @@ class Qimai_Diy_Var:
     """
         * 便于其他类继承的通用参数区：
     """
-    def __init__(self, country='cn', rank_type='all', version='ios12', device='iphone', brand='all', run_time=datetime.date.today(), status=6, genre_type=36, lost_sort='out_time'):
+    def __init__(self, country='cn', rank_type='all', version='ios12', device='iphone', brand='all', run_time=today_date, status=6, genre_type=36, lost_sort='out_time'):
         """
             * 类参数区：
             :param country: 国家/地区：默认中国
@@ -608,7 +609,7 @@ class Get_Keyword_Info(Qimai_Diy_Var):
         * 举例②：获取关键词下联想词；
         search_type: 搜索类型：默认全部，其他可选例如App、开发者等
     """
-    def __init__(self, keyword, start_date=datetime.date.today(), end_date=datetime.date.today()-one_day, search_type='all'):
+    def __init__(self, keyword, start_date=today_date, end_date=today_date-one_day, search_type='all'):
         Qimai_Diy_Var.__init__(self)
         self.keyword = keyword
         self.start_date = start_date
@@ -709,7 +710,7 @@ class Get_Keyword_Info(Qimai_Diy_Var):
             self.keyword_extend_list.append(res.json())
             page_num += 1
             run_app_num += 100
-            if page_num > res.json()['max_page'] or run_app_num > max_index:
+            if page_num > res.json()['maxPage'] or run_app_num > max_index:
                 break
         return self.keyword_extend_list
 
@@ -1264,7 +1265,7 @@ class Get_Keyword_LoseNewDownUp_List(Get_Clear_Keyword_List):
         * 举例①：获取当前词落榜产品基本信息，落榜前排名等相关数据；
         top_history: 历史排名，默认全部，可选进入过T10
     """
-    def __init__(self, keyword, start_date=datetime.date.today(), end_date=datetime.date.today(), top_history='all'):
+    def __init__(self, keyword, start_date=today_date, end_date=today_date, top_history='all'):
         super(Get_Keyword_LoseNewDownUp_List, self).__init__(start_date, end_date)
         self.keyword = keyword
         self.start_date = start_date
