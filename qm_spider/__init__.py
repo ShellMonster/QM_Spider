@@ -81,30 +81,9 @@ class DingDing_Push:
         payload = json.dumps(payload)
         res = requests.post(self.push_url, data=payload, headers=self.headers)
 
-    def app_rank_abnormal_push(self):
+    def app_args_markdown_push(self):
         """
-            * 榜单异常推送(专用)：
-        """
-        self.samePubApp_link = 'https://www.qimai.cn/app/samePubApp/appid/%s/country/cn' %(self.other_var[0])
-        self.app_rank_link = 'https://www.qimai.cn/app/rank/appid/%s/country/cn' %(self.other_var[0])
-        self.app_keyword_link = 'https://www.qimai.cn/app/keyword/appid/%s/country/cn' %(self.other_var[0])
-        # self.app_name = self.other_var[1]
-        # self.samePubApp_name = self.other_var[2]
-        # self.offline_time = self.other_var[3]
-        # self.offline_yesterday_rank = self.other_var[4]
-        payload = {
-            "msgtype": "markdown",
-            "markdown": {
-                "title": "【%s】%s" %(self.now_time[:10], self.push_title),
-                "text": "**推送事件**：%s\n\n**抓取时间**：%s\n\n**App名称**：[%s](%s)\n\n**开发商名称**：[%s](%s)\n\n**下架/清榜时间**：%s\n\n**下架/清榜前一日总榜**：%s" %(self.push_title, self.now_time, self.other_var[1], self.app_rank_link, self.other_var[2], self.samePubApp_link, self.other_var[3], self.other_var[4])
-            }
-        }
-        payload = json.dumps(payload)
-        res = requests.post(self.push_url, data=payload, headers=self.headers)
-
-    def app_args_push(self):
-        """
-            * 万能推送：
+            * 万能推送-markdown：
             推送内容自己写为Markdown形式即可；
         """
         payload = {
@@ -112,6 +91,16 @@ class DingDing_Push:
             "markdown": {
                 "title": "%s" %(self.push_title),
                 "text": "%s" %(self.other_var[0])
+            }
+        }
+        payload = json.dumps(payload)
+        res = requests.post(self.push_url, data=payload, headers=self.headers)
+
+    def app_args_text_push(self):
+        payload = {
+            "msgtype": "text",
+            "text": {
+                "content": "%s" %(self.other_var[0])
             }
         }
         payload = json.dumps(payload)
@@ -1371,6 +1360,22 @@ class Get_Keyword_LoseNewDownUp_List(Get_Clear_Keyword_List):
                 break
         return self.keyword_lostApp_list
 
+    def get_lostApp_onePage(self):
+        """
+            * 获取词下落榜App的数据-第一页：
+        """
+        url = 'https://api.qimai.cn/search/searchPageExtend?history=%s&version=%s&device=%s&filter=%s&word=%s&country=%s&date=oneMonth&sort=out_time&sort_type=%s&type=out&sdate=%s&edate=%s&page=1' % (self.top_history, self.version, self.device, self.filter, self.keyword, self.country, self.sort_type, self.start_date, self.end_date)
+        res = session.get(url, headers=headers)
+        self.lostApp_onePage_data = res.json()
+        return self.lostApp_onePage_data
+
+    def get_lostApp_num(self):
+        """
+            * 获取词下落榜App的数量：
+        """
+        self.get_lostApp_onePage()
+        return self.lostApp_onePage_data['total_num']
+
     def get_newApp_list(self):
         """
             * 获取关键词下新覆盖产品的列表；
@@ -1386,6 +1391,22 @@ class Get_Keyword_LoseNewDownUp_List(Get_Clear_Keyword_List):
             if page_num > res.json()['total_page']:
                 break
         return self.keyword_newApp_list
+
+    def get_newApp_onePage(self):
+        """
+            * 获取词下新进App的数据-第一页：
+        """
+        url = 'https://api.qimai.cn/search/searchPageExtend?history=%s&version=%s&device=%s&filter=%s&word=%s&country=%s&date=oneMonth&sort=new_time&sort_type=%s&type=new&sdate=%s&edate=%s&page=1' % (self.top_history, self.version, self.device, self.filter, self.keyword, self.country, self.sort_type, self.start_date, self.end_date)
+        res = session.get(url, headers=headers)
+        self.newApp_onePage_data = res.json()
+        return self.newApp_onePage_data
+
+    def get_newApp_num(self):
+        """
+            * 获取词下新进App的数量：
+        """
+        self.get_newApp_onePage()
+        return self.newApp_onePage_data['total_num']
 
     def get_rankDown_list(self):
         """
@@ -1403,6 +1424,22 @@ class Get_Keyword_LoseNewDownUp_List(Get_Clear_Keyword_List):
                 break
         return self.keyword_rankDown_list
 
+    def get_rankDown_onePage(self):
+        """
+            * 获取词下排名下降较快App的数据-第一页：
+        """
+        url = 'https://api.qimai.cn/search/searchPageExtend?history=%s&version=%s&device=%s&filter=%s&word=%s&country=%s&date=oneMonth&sort=down_rank&sort_type=%s&type=down&sdate=%s&edate=%s&page=1' % (self.top_history, self.version, self.device, self.filter, self.keyword, self.country, self.sort_type, self.start_date, self.end_date)
+        res = session.get(url, headers=headers)
+        self.rankDown_onePage_data = res.json()
+        return self.rankDown_onePage_data
+
+    def get_rankDown_num(self):
+        """
+            * 获取词下排名下降较快App的数量：
+        """
+        self.get_rankDown_onePage()
+        return self.rankDown_onePage_data['total_num']
+
     def get_rankGoUp_list(self):
         """
             * 获取关键词下排名上升较多的产品列表；
@@ -1418,6 +1455,22 @@ class Get_Keyword_LoseNewDownUp_List(Get_Clear_Keyword_List):
             if page_num > res.json()['total_page']:
                 break
         return self.keyword_rankUp_list
+
+    def get_rankGoUp_onePage(self):
+        """
+             * 获取词下排名上升较快App的数据-第一页：
+        """
+        url = 'https://api.qimai.cn/search/searchPageExtend?history=%s&version=%s&device=%s&filter=%s&word=%s&country=%s&date=oneMonth&sort=up_rank&sort_type=%s&type=up&sdate=%s&edate=%s&page=%s' % (self.top_history, self.version, self.device, self.filter, self.keyword, self.country, self.sort_type, self.start_date, self.end_date, page_num)
+        res = session.get(url, headers=headers)
+        self.rankGoUp_onePage_data = res.json()
+        return self.rankGoUp_onePage_data
+
+    def get_rankGoUp_num(self):
+        """
+             * 获取词下排名上升较快App的数量：
+        """
+        self.get_rankGoUp_onePage()
+        return self.rankGoUp_onePage_data['total_num']
 
     def get_t10App_list(self):
         """

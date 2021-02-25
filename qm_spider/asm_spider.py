@@ -118,7 +118,7 @@ class Get_ASM_Consume:
             try:
                 df = pd.read_csv('%s' % (self.yes_file_path), header=None)
             except:
-                DingDing_Push('ASM异常推送告警', '### ASM余额监控-异常告警提示\n\n**提示内容：**当前读取前1日存储账单记录异常，已再向前1日读取存储，数据或出现偏移，请注意确认！', push_url=self.push_token).app_args_push()
+                DingDing_Push('ASM异常推送告警', '### ASM余额监控-异常告警提示\n\n**提示内容：**当前读取前1日存储账单记录异常，已再向前1日读取存储，数据或出现偏移，请注意确认！', push_url=self.push_token).app_args_markdown_push()
                 df = pd.read_csv('%s' % (self.yes_yes_file_path), header=None)
 
             # 正式开始执行；
@@ -203,7 +203,7 @@ class Get_ASM_Consume:
                                     print('当前【%s】符合，即将推送...' % (budget_order_id))
                                     push_title = "【%s】%s" % (advertiser_or_product, 'ASM账户余额推送'),
                                     push_text = "**当前日期**：%s\n\n**账户备注名**：%s(%s)\n\n**账户公司名**：%s\n\n**昨日消耗**：%s\n\n**累计消耗**：%s\n\n**限制消耗金额**：%s\n\n**预估剩余消耗天数**：**%s天**\n\n**时间区间**：%s至%s\n\n**账号组别**：%s\n\n " % (self.today_date, budget_name, budget_order_status, advertiser_or_product, yes_run_num, spent_value, budget_amount, now_yue_days, start_date, end_date, campaign_group)
-                                    DingDing_Push(push_title, *[push_text], push_url=self.push_token).app_args_push()
+                                    DingDing_Push(push_title, *[push_text], push_url=self.push_token).app_args_markdown_push()
                                     # 推送成功，进行下一步；
                             else:
                                 pass
