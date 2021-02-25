@@ -169,6 +169,22 @@ class Qimai_Outside_Tool:
                 return True
         return False
 
+    def get_week_day(self):
+        """
+            * 获取今日星期几：
+        """
+        week_day = {
+            0: '星期一',
+            1: '星期二',
+            2: '星期三',
+            3: '星期四',
+            4: '星期五',
+            5: '星期六',
+            6: '星期日',
+        }
+        day = self.data_info[0].weekday()  # weekday()可以获得是星期几
+        return week_day[day]
+
     def json_to_df(self):
         """
             * json转为pandas的表格形式；
@@ -503,6 +519,27 @@ class Get_App_Appinfo(Qimai_Diy_Var):
         self.subname = self.appinfo['appInfo']['subname']
         return self.subname
 
+    def get_publisher_name(self):
+        """
+            * 获取App归属的开发商名称(中文)
+        """
+        self.get_appinfo()
+        self.publisher_name = self.appinfo['appInfo']['publisher']
+        return self.publisher_name
+
+    def get_developer_name(self):
+        """
+            * 获取App归属的开发商名称(英文)
+        """
+        self.get_appinfo()
+        self.developer_name = self.appinfo['appInfo']['publisher_seller']
+        return self.developer_name
+
+    def get_purchases_num(self):
+        self.get_appinfo()
+        self.purchases_num = self.appinfo['appInfo']['purchases_num']
+        return self.purchases_num
+
 # 获取榜单相关数据；
 class Get_App_Rank(Qimai_Diy_Var):
     """
@@ -789,6 +826,12 @@ class Get_App_Keyword(Qimai_Diy_Var):
         self.app_keywordSummary = res.json()
         return self.app_keywordSummary
 
+    def get_search_appKeyword(self, keyword, end_date, start_date=today_date):
+        url = 'https://api.qimai.cn/app/searchAppKeywords?keywords=%s&country=%s&device=%s&version=%s&appid=%s&sdate=%s&edate=%s' %(keyword, self.country, self.device, self.version, self.appid, start_date, end_date)
+        res = session.get(url, headers=headers)
+        self.search_appKeyword_data = res.json()
+        return self.search_appKeyword_data
+
     def get_AnalysisDataKeyword(self, start_date, end_date, keyword_hot_start=4605):
         """
             * 获取时间段内关键词覆盖数量历史：
@@ -817,6 +860,46 @@ class Get_App_Keyword(Qimai_Diy_Var):
         res = session.get(url, headers=headers)
         self.app_keywordHistor_data = res.json()
         return self.app_keywordHistor_data
+
+    def get_match_keywordRank(self, keyword, start_date, end_date, day=1):
+        """
+            * 匹配App下某个关键词是否已掉词：
+        """
+        self.get_keywordHistory_rank(keyword, start_date, end_date, day)
+        if self.app_keywordHistor_data['msg'] == '成功':
+            for i in self.app_keywordHistor_data['data']['list']:
+                if i['name'] == '排名':
+                    today_rank = i['data'][-1][1]
+                    if str(today_rank) == 'None':
+                        return '掉词'
+                    else:
+                        return '有排名'
+        else:
+            return '掉词'
+
+    def get_match_keywordLost(self, keyword, end_date, start_date, day=0):
+        """
+            * 匹配App下某个关键词是否未覆盖；
+        """
+        self.get_search_appKeyword(keyword, end_date, start_date)
+        if self.search_appKeyword_data['msg'] == '成功':
+            for i in self.search_appKeyword_data['wordinfo']:
+                n_keyword = i['w']
+                if n_keyword.lower() == keyword.lower():
+                    if int(i['r']) == -1:
+                        # 等于-1则为未覆盖；
+                        return '未覆盖'
+                    elif int(i['r']) == 0:
+                        # 等于0则需要继续判断
+                        n_keyword_status = Get_App_Keyword(self.appid).get_match_keywordRank(keyword, start_date, end_date, day)
+                        if n_keyword_status == '掉词':
+                            return '掉词'
+                        else:
+                            return '未知'
+                    else:
+                        return '未知'
+        else:
+            return '未知'
 
     def get_keywordDetail_to_df(self):
         """

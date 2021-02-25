@@ -195,6 +195,7 @@ class Jieba_Word_algorithm:
                                     if cut_word_x == cut_word_i:
                                         # 相等说明出现了重叠情况，在指定位置插入即可；
                                         nPos = word_itc.find(cut_word_i)
+                                        # print(cut_word_x, '第一种匹配', word_itc[:nPos], now_word[:cut_x], word_itc[nPos:])
                                         word_itc = word_itc[:nPos] + now_word[:cut_x] + word_itc[nPos:]
                                         run_is_bool = True
                                         break
@@ -210,6 +211,7 @@ class Jieba_Word_algorithm:
                                         if cut_word_x == cut_word_i:
                                             # 相等说明出现了重叠情况，在指定位置插入即可；
                                             nPos = word_itc.find(cut_word_i)
+                                            # print(cut_word_x, '第二种匹配', word_itc[:nPos+len(cut_word_x)], now_word[cut_x:], word_itc[nPos+len(cut_word_x):])
                                             word_itc = word_itc[:nPos+len(cut_word_x)] + now_word[cut_x:] + word_itc[nPos+len(cut_word_x):]
                                             run_is_bool = True
                                             break

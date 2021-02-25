@@ -13,7 +13,7 @@ class Send_Mail:
         self.cc = cc
         self.from_user = from_user
 
-    def send_qm_mail(self):
+    def send_to_mail(self):
         if len(self.from_user) > 0:
             self.mail_content = {
                 'Subject': self.subject,  # 邮件标题
