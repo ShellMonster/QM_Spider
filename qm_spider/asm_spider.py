@@ -4,7 +4,7 @@ from qm_spider.email_py import *
 
 # 封装获取消耗情况的脚本；
 class Get_ASM_Consume:
-    def __init__(self, accountName, accountPwd, X_Apple_Widget_Key='a01459d797984726ee0914a7097e53fad42b70e1f08d09294d14523a1d4f61e1', file_name='ASM-可用余额存取表.csv', file_path='./', push_token='https://oapi.dingtalk.com/robot/send?access_token=0dbd8b6b14b0aca04e7f5ea8367d43522d3fc79eaff519a0d7ee3509cfe70e18'):
+    def __init__(self, accountName, accountPwd, X_Apple_Widget_Key='a01459d797984726ee0914a7097e53fad42b70e1f08d09294d14523a1d4f61e1', file_name='ASM-可用余额存取表.csv', file_path='./', push_token='https://oapi.dingtalk.com/robot/send?access_token=f3a590b8c5f4c4777fe0f217067f15132091bff53e2a2143a5daa981d795159d'):
         self.accountName = accountName
         self.accountPwd = accountPwd
         self.X_Apple_Widget_Key = X_Apple_Widget_Key

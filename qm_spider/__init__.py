@@ -1,4 +1,4 @@
-import requests, datetime, time, warnings, json, calendar, math, os, re, jieba, jieba.analyse, random
+import requests, datetime, time, warnings, json, calendar, math, os, re, jieba, jieba.analyse, random, string
 from datetime import date
 from dateutil.relativedelta import relativedelta
 from pandas.io.json import json_normalize
@@ -7,7 +7,10 @@ import pandas as pd
 import numpy as np
 from bs4 import BeautifulSoup
 from scipy.stats import norm, mstats
+from urllib.parse import quote
+from urllib.parse import unquote
 warnings.filterwarnings("ignore")
+from requests.adapters import HTTPAdapter
 
 
 '''
@@ -39,12 +42,14 @@ warnings.filterwarnings("ignore")
 
 # 保持会话；
 session = requests.session()
+session.mount('http://', HTTPAdapter(max_retries=3))
+session.mount('https://', HTTPAdapter(max_retries=3))
 today_date = datetime.date.today()
 one_day = datetime.timedelta(days=1)
 
 # 请求头；
 headers = {
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.87 Safari/537.36"
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36 Edg/88.0.705.81"
 }
 
 # 钉钉推送；
@@ -173,6 +178,24 @@ class Qimai_Outside_Tool:
         }
         day = self.data_info[0].weekday()  # weekday()可以获得是星期几
         return week_day[day]
+
+    def get_index_list_num(self):
+        """
+            * 定位列表内字符串位置：
+            * 返回列表；
+        """
+        run_list_num = []
+        if '' in self.data_info[0]:
+            for x, i in enumerate(self.data_info[0]):
+                if i == '':  # 判断字符串
+                    run_list_num.append(x - 1)
+            # 把最后一列加入，排版完毕后删除空值；
+            run_list_num.append(len(self.data_info[0]) - 1)
+            for x, i in enumerate(run_list_num):
+                run_list_num[x] = i - x
+        else:
+            run_list_num.append(len(self.data_info[0]) - 1)
+        return run_list_num
 
     def json_to_df(self):
         """
@@ -463,7 +486,7 @@ class Qimai_Diy_Var:
     """
         * 便于其他类继承的通用参数区：
     """
-    def __init__(self, country='cn', rank_type='all', version='ios12', device='iphone', brand='all', run_time=today_date, status=6, genre_type=36, lost_sort='out_time'):
+    def __init__(self, country='cn', rank_type='all', version='ios12', device='iphone', brand='all', status=6, genre_type=36, lost_sort='out_time'):
         """
             * 类参数区：
             :param country: 国家/地区：默认中国
@@ -471,7 +494,6 @@ class Qimai_Diy_Var:
             :param version: 系统版本：默认iOS 12
             :param device: 设备类型：默认iPhone
             :param brand: 价格类型：默认全部，其他可选例如免费、付费、畅销
-            :param run_time: 获取时间，默认当日
             :param status:
             :param genre_type: 榜单类型，默认全部，其他可选输入榜单对应榜单id即可
         """
@@ -480,7 +502,6 @@ class Qimai_Diy_Var:
         self.version = version
         self.device = device
         self.brand = brand
-        self.run_time = run_time
         self.status = status
         self.genre_type = genre_type
         self.lost_sort = lost_sort
@@ -493,7 +514,7 @@ class Get_App_Appinfo(Qimai_Diy_Var):
 
     def get_appinfo(self):
         """
-            * 获取App的基本信息；
+            * 获取App的基本信息(无关联推荐版本信息)；
         """
         url = 'https://api.qimai.cn/app/appinfo?appid=%s&country=%s' %(self.appid, self.country)
         res = session.get(url, headers=headers)
@@ -529,6 +550,39 @@ class Get_App_Appinfo(Qimai_Diy_Var):
         self.purchases_num = self.appinfo['appInfo']['purchases_num']
         return self.purchases_num
 
+    def get_baseinfo(self):
+        """
+            * 获取App基础信息(包含开发商名称内购价格、关联推荐产品)
+        """
+        url = 'https://api.qimai.cn/app/baseinfo?country=%s&appid=%s' %(self.country, self.appid)
+        res = session.get(url, headers=headers)
+        self.app_baseinfo_data = res.json()
+        return self.app_baseinfo_data
+
+    def get_version(self, start_date='', end_date=''):
+        """
+            * 获取App的版本信息：
+            * 可设定时间段，默认全部；
+        """
+        url = 'https://api.qimai.cn/app/version?country=%s&appid=%s&sdate=%s&edate=%s' %(self.country, self.appid, start_date, end_date)
+        res = session.get(url, headers=headers)
+        self.app_version_data = res.json()
+        return self.app_version_data
+
+    def get_baseinfo_parameter(self, user_type_name='支持网站'):
+        """
+            * 获取baseinfo接口下详细参数值，自行指定获取哪个：
+            :param user_type_name: 需要获取的参数名，默认“支持网站”；
+        """
+        self.get_baseinfo()
+        for base_info in self.app_baseinfo_data['appInfo']:
+            type_name = base_info['name']
+            if type_name == user_type_name:
+                app_url = base_info['value']
+                return app_url
+        else:
+            return '未找到'
+
 # 获取榜单相关数据；
 class Get_App_Rank(Qimai_Diy_Var):
     """
@@ -549,34 +603,34 @@ class Get_App_Rank(Qimai_Diy_Var):
         self.simple = simple
         self.rankEchartType = rankEchartType
 
-    def get_rank_info(self):
+    def get_rank_data(self):
         """
             * 获取App的榜单数据：
         """
         url = 'https://api.qimai.cn/app/rankMore?appid=%s&country=%s&brand=%s&day=%s&appRankShow=%s&subclass=%s&simple=%s&sdate=%s&edate=%s&rankEchartType=%s&rankType=%s&device=%s' %(self.appid, self.country, self.brand, self.day, self.appRankShow, self.subclass, self.simple, self.start_date, self.end_date, self.rankEchartType, self.rankType, self.device)
         res = session.get(url, headers=headers)
-        self.rank_info = res.json()
-        return self.rank_info
+        self.rank_data = res.json()
+        return self.rank_data
 
-    def all_rank(self):
+    def get_all_rank_data(self):
         """
             * 获取所有榜单的数据列表；
             从json中获取并返回，可能为空；
         """
-        self.get_rank_info()
+        self.get_rank_data()
         try:
-            return self.rank_info['data']['list']
+            return self.rank_data['data']['list']
         except:
             return []
 
-    def clear_rank(self):
+    def get_clear_rank_data(self):
         """
             * 获取清榜数据；
             从json中获取并返回，可能为空；
         """
-        self.get_rank_info()
+        self.get_rank_data()
         try:
-            return self.rank_info['data']['clear']
+            return self.rank_data['data']['clear']
         except:
             return []
 
@@ -610,8 +664,10 @@ class Get_App_SamePubApp(Get_App_Appinfo, Qimai_Diy_Var):
                 self.app_total_genid = info['total']['brand']
                 self.app_class_genid = info['class']['brand']
                 return self.app_total_genid, self.app_class_genid
+            else:
+                return '', ''
 
-    def samePubApp_sorce(self):
+    def get_samePubApp_sorce(self):
         """
             * 获取开发商权重评分(自带算法)；
         """
@@ -644,7 +700,7 @@ class Get_Keyword_Info(Qimai_Diy_Var):
 
     def get_keyword_search(self):
         """
-            * 获取关键词下产品信息：
+            * 获取关键词下产品信息(第一页)：
             * 默认搜索版本为iOS 12；
         """
         url = 'https://api.qimai.cn/search/index?device=%s&country=%s&search=%s&date=%s&version=%s&search_type=%s&changeRateDate=&page=1&changeRateType=top10&sdate=%s&edate=%s&status=%s' %(self.device, self.country, self.keyword, self.start_date, self.version, self.search_type, self.start_date, self.end_date, self.status)
@@ -685,7 +741,8 @@ class Get_Keyword_Info(Qimai_Diy_Var):
             * 获取关键词下关键词相关信息:
             * 包含指数、结果数、WordID等；
         """
-        url = 'https://api.qimai.cn/search/getWordInfo?device=%s&country=%s&search=%s&version=%s&date=%s&search_type=%s&edate=%s&status=%s' %(self.device, self.country, self.keyword, self.version, self.start_date, self.search_type, self.end_date, self.status)
+        url = 'https://api.qimai.cn/search/getWordInfo?device=%s&country=%s&search=%s&version=%s&date=%s&search_type=%s&status=%s' %(self.device, self.country, self.keyword, self.version, self.start_date, self.search_type, self.status)
+        # url = 'https://api.qimai.cn/search/getWordInfo?device=%s&country=%s&search=%s&version=%s&date=%s&search_type=%s&edate=%s&status=%s' %(self.device, self.country, self.keyword, self.version, self.start_date, self.search_type, self.end_date, self.status)
         headers = {
             'origin': 'https://www.qimai.cn',
             'referer': 'https://www.qimai.cn/',
@@ -713,12 +770,66 @@ class Get_Keyword_Info(Qimai_Diy_Var):
 
     def get_hotSearch_data(self):
         """
-            * 获取关键词热搜相关数据；
+            * 获取关键词热搜相关数据-默认90天内全部数据；
         """
         url = 'https://api.qimai.cn/engagement/historySearch?country=%s&version=%s&search_type=1&search=%s' %(self.country, self.version, self.keyword)
         res = session.get(url, headers=headers)
         self.keyword_hotSearch_data = res.json()
         return self.keyword_hotSearch_data
+
+    def get_seven_hotSearch(self):
+        """
+            * 获取关键词近7日上热搜数据：
+            * 返回第1个为次数，第2个为时长；
+        """
+        self.get_hotSearch_data()
+        hot_search_all = ['', '']
+        hot_search_data = self.keyword_hotSearch_data['data']['collect']['show_collect'][2]  # 近07日数据；
+        for i in hot_search_data:
+            title = i['title']
+            if title == '近7日上榜次数':
+                hot_search_all[0] = i['value']
+            elif title == '近7日上榜时长':
+                hot_search_all[1] = i['value']
+
+        # 返回数据；
+        return hot_search_all
+
+    def get_thirty_hotSearch(self):
+        """
+            * 获取关键词近30日上热搜数据：
+            * 返回第1个为次数，第2个为时长；
+        """
+        self.get_hotSearch_data()
+        hot_search_all = ['', '']
+        hot_search_data = self.keyword_hotSearch_data['data']['collect']['show_collect'][1]  # 近30日数据；
+        for i in hot_search_data:
+            title = i['title']
+            if title == '近30日上榜次数':
+                hot_search_all[0] = i['value']
+            elif title == '近30日上榜时长':
+                hot_search_all[1] = i['value']
+
+        # 返回数据；
+        return hot_search_all
+
+    def get_ninety_hotSearch(self):
+        """
+            * 获取关键词近90日上热搜数据：
+            * 返回第1个为次数，第2个为时长；
+        """
+        self.get_hotSearch_data()
+        hot_search_all = ['', '']
+        hot_search_data = self.keyword_hotSearch_data['data']['collect']['show_collect'][0]  # 近90日数据；
+        for i in hot_search_data:
+            title = i['title']
+            if title == '近90日上榜次数':
+                hot_search_all[0] = i['value']
+            elif title == '近90日上榜时长':
+                hot_search_all[1] = i['value']
+
+        # 返回数据；
+        return hot_search_all
 
     def get_keyword_extend(self, max_index=1000000, orderBy='', order=''):
         """
@@ -790,9 +901,10 @@ class Get_App_Keyword(Qimai_Diy_Var):
         * 举例①：获取App的对应时间覆盖数据(默认当日)；
         * 举例②：获取App不同日期的T3、T5数据；
     """
-    def __init__(self, appid):
+    def __init__(self, appid, run_time=today_date):
         Qimai_Diy_Var.__init__(self)
         self.appid = appid
+        self.run_time = run_time
 
     def get_keywordDetail(self):
         """
@@ -839,7 +951,7 @@ class Get_App_Keyword(Qimai_Diy_Var):
     def get_keywordHistory_rank(self, keyword, start_date, end_date, day=1):
         """
             * 获取时间段内关键词历史排名数据；
-            * 可指定按分钟、小时、天，具体参考官网；
+            * 可指定按分钟、小时、天，具体参考官网，默认按天；
             :param keyword: 关键词
             :param start_date: 开始日期
             :param end_date: 结束日期
@@ -850,7 +962,7 @@ class Get_App_Keyword(Qimai_Diy_Var):
         self.app_keywordHistor_data = res.json()
         return self.app_keywordHistor_data
 
-    def get_match_keywordRank(self, keyword, start_date, end_date, day=1):
+    def get_match_keywordRank(self, keyword, start_date=today_date, end_date=today_date-one_day, day=1):
         """
             * 匹配App下某个关键词是否已掉词：
         """
@@ -866,7 +978,7 @@ class Get_App_Keyword(Qimai_Diy_Var):
         else:
             return '掉词'
 
-    def get_match_keywordLost(self, keyword, end_date, start_date, day=0):
+    def get_match_keywordLost(self, keyword, start_date=today_date, end_date=today_date-one_day, day=0):
         """
             * 匹配App下某个关键词是否未覆盖；
         """
@@ -900,10 +1012,11 @@ class Get_App_Keyword(Qimai_Diy_Var):
         self.json_df.columns = ['关键词ID', '关键词', '排名', '变动前排名', '排名变动值', '指数', '结果数', '未知1', '未知2']
         return self.json_df
 
-    def app_cover_regular(self):
+    def get_app_cover_regular(self, qualified_keyword_num=3000):
         """
             * 判断产品的覆盖数量是否合格(专用)：
             * 返回是否合格、总覆盖数、T3数、T10数；
+            :param qualified_keyword_num: 大于等于多少的算合格，默认3000；
         """
         self.get_keywordSummary()
         for keywordSummary_info in self.app_keywordSummary['keywordSummary']:
@@ -912,7 +1025,7 @@ class Get_App_Keyword(Qimai_Diy_Var):
                 all_keyword = keywordSummary_info['all']['num']
                 top3_keyword = keywordSummary_info['top3']['num']
                 top10_keyword = keywordSummary_info['top10']['num']
-                if int(all_keyword) >= 3000:
+                if int(all_keyword) >= qualified_keyword_num:
                     return ['覆盖合格', all_keyword, top3_keyword, top10_keyword]
                 else:
                     return ['覆盖不合格', all_keyword, top3_keyword, top10_keyword]
@@ -923,57 +1036,52 @@ class Get_App_Comment(Qimai_Diy_Var):
         * 获取App的评论相关数据；
         * 举例①：获取App每天的新增评论数；
         * 举例②：获取App指定星级每天评论数据；
-        typec：评论计量时间单位：默认按天\n
-        star：评论星级，默认5星\n
-        delete：每日评论统计类型，默认全部评论，其他可选例如未删除评论、已删除评论\n
-        orderType：评论排序类型，默认最新评价，其他可选例如最优帮助、最高评价、最低评价\n
-        commentType：评论类型，默认全部评论，其他可选例如开发者回复、未删除、已删除\n
     """
-    def __init__(self, appid, start_date, end_date, typec='day', star='five', delete=-1, orderType='time', commentType='default'):
+    def __init__(self, appid, start_date, end_date):
         Qimai_Diy_Var.__init__(self)
         self.appid = appid
         self.start_date = start_date
         self.end_date = end_date
-        self.typec = typec
-        self.star = star
-        self.delete = delete
-        self.orderType = orderType
-        self.commentType = commentType
 
-    def get_commentRateNum(self):
+    def get_commentRateNum(self, typec='day'):
         """
             * 获取1-5星每个星级每天的评论增删数量；
+            :param typec: 评论计量时间单位：默认按天
         """
-        url = 'https://api.qimai.cn/app/commentRateNum?appid=%s&country=%s&sdate=%s&edate=%s&typec=%s' %(self.appid, self.country, self.start_date, self.end_date, self.typec)
+        url = 'https://api.qimai.cn/app/commentRateNum?appid=%s&country=%s&sdate=%s&edate=%s&typec=%s' %(self.appid, self.country, self.start_date, self.end_date, typec)
         res = session.get(url, headers=headers)
         self.app_commentRateNum = res.json()
         return self.app_commentRateNum
 
-    def get_commentNum(self):
+    def get_commentNum(self, delete=-1):
         """
             * 获取每日已删除未删除评论数量；
+            :param delete: 每日评论统计类型，默认全部评论，其他可选例如未删除评论、已删除评论
         """
-        url = 'https://api.qimai.cn/app/commentNum?appid=%s&country=%s&delete=%s&sdate=%s&edate=%s' %(self.appid, self.country, self.delete, self.start_date, self.end_date)
+        url = 'https://api.qimai.cn/app/commentNum?appid=%s&country=%s&delete=%s&sdate=%s&edate=%s' %(self.appid, self.country, delete, self.start_date, self.end_date)
         res = session.get(url, headers=headers)
         self.app_commentNum = res.json()
         return self.app_commentNum
 
-    def get_comment(self, search_word=''):
+    def get_comment(self, search_word='', star='five', orderType='time', commentType='default'):
         """
             * 获取详细每条评论内容：
-            * 包含星级、用户昵称、评论内容等；
+            * 包含星级、用户昵称、评论内容等(默认5星)；
+            :param star: 评论星级，默认5星
+            :param orderType: 评论排序类型，默认最新评价，其他可选例如最优帮助、最高评价、最低评价
+            :param commentType: 评论类型，默认全部评论，其他可选例如开发者回复、未删除、已删除
         """
-        url = 'https://api.qimai.cn/app/comment?appid=%s&country=%s&sword=&sdate=%s+00:00:00&edate=%s+23:59:59&orderType=%s&commentType=%s&sword=%s' %(self.appid, self.country, self.start_date, self.end_date, self.orderType, self.commentType, search_word)
+        url = 'https://api.qimai.cn/app/comment?appid=%s&country=%s&sword=&sdate=%s+00:00:00&edate=%s+23:59:59&orderType=%s&commentType=%s&sword=%s&star=%s' %(self.appid, self.country, self.start_date, self.end_date, orderType, commentType, search_word, star)
         res = session.get(url, headers=headers)
         self.app_comment = res.json()
         return self.app_comment
 
-    def get_all_commentRateNum(self):
+    def get_all_commentRateNum(self, typec='day'):
         """
             * 获取所有1-5星评论数量汇总为1列：
             * 返回dataframe格式数据；
         """
-        self.get_commentRateNum()
+        self.get_commentRateNum(typec)
         df = pd.DataFrame({})
         for comment_info in self.app_commentRateNum['rateInfo']:
             df_new = Qimai_Outside_Tool(comment_info['data']).list_to_df()
@@ -983,12 +1091,12 @@ class Get_App_Comment(Qimai_Diy_Var):
         df = df.groupby('日期').sum()
         return df
 
-    def get_Star_commentRateNum(self, star_value='五星'):
+    def get_Star_commentRateNum(self, star_value='五星', typec='day'):
         """
             * 获取指定星级的评论数量汇总：
             * 默认获取5星的，返回dataframe格式数据；
         """
-        self.get_commentRateNum()
+        self.get_commentRateNum(typec)
         df = pd.DataFrame({})
         for comment_info in self.app_commentRateNum['rateInfo']:
             if comment_info['name'] == star_value:
@@ -1122,20 +1230,23 @@ class Get_PreOrder_AppList(Qimai_Diy_Var):
         * 获取预订App列表相关数据；
         * 举例①：获取当前预订列表所有预订产品相关数据；
     """
-    def __init__(self, preOrder_order=1):
+    def __init__(self, preOrder_order=1, price_status=3):
         Qimai_Diy_Var.__init__(self)
         self.preOrder_order = preOrder_order
+        self.price_status = price_status
 
     def get_preOrder_applist(self):
         """
             * 获取时间段内预订App列表产品相关信息；
             * 从类中指定开始结束时间；
             * 返回列表格式数据，列表中都是json；
+            preOrder_order - 预订排序规则，默认按照发布日期；\n
+            price_status - 预订产品价格筛选，默认全部，1为免费，0为付费，3为全部
         """
         self.preOrder_applist_list = []
         page_num = 1
         while True:
-            url = 'https://api.qimai.cn/rank/preOrder?genre=%s&country=%s&order=%s&page=%s' %(self.genre_type, self.country, self.preOrder_order, page_num)
+            url = 'https://api.qimai.cn/rank/preOrder?genre=%s&country=%s&order=%s&status=%s&page=%s' %(self.genre_type, self.country, self.preOrder_order, self.price_status, page_num)
             res = session.get(url, headers=headers)
             self.preOrder_applist_list.append(res.json())
             page_num += 1
@@ -1176,7 +1287,7 @@ class Get_App_Recommend(Qimai_Diy_Var):
         self.app_engagement = res.json()
         return self.app_engagement
 
-    def featured_is_match(self):
+    def get_featured_is_match(self):
         """
             * 上精品推荐匹配函数：
             * 匹配产品是否上过推荐；
@@ -1188,7 +1299,7 @@ class Get_App_Recommend(Qimai_Diy_Var):
         else:
             return ['无推荐', tuijian_num]
 
-    def featured_type_match(self, match_type='Today'):
+    def get_featured_type_match(self, match_type='Today'):
         """
             * 上精品推荐匹配函数：
             * 匹配上某个类型的次数、时长；
@@ -1304,7 +1415,7 @@ class Get_Keyword_HintsRank(Qimai_Diy_Var):
         minPopular: 最小流行度\n
         maxPopular: 最大流行度
     """
-    def __init__(self, change_inc=0, minResult='', maxResult='', minHints='', maxHints='', minPopular='', maxPopular=''):
+    def __init__(self, change_inc=0, run_time=today_date, minResult='', maxResult='', minHints='', maxHints='', minPopular='', maxPopular=''):
         Qimai_Diy_Var.__init__(self)
         self.change_inc = change_inc
         self.minResult = minResult
@@ -1313,6 +1424,7 @@ class Get_Keyword_HintsRank(Qimai_Diy_Var):
         self.maxHints = maxHints
         self.minPopular = minPopular
         self.maxPopular = maxPopular
+        self.run_time = run_time
 
     def get_hints_rank(self):
         """
@@ -1460,7 +1572,7 @@ class Get_Keyword_LoseNewDownUp_List(Get_Clear_Keyword_List):
         """
              * 获取词下排名上升较快App的数据-第一页：
         """
-        url = 'https://api.qimai.cn/search/searchPageExtend?history=%s&version=%s&device=%s&filter=%s&word=%s&country=%s&date=oneMonth&sort=up_rank&sort_type=%s&type=up&sdate=%s&edate=%s&page=%s' % (self.top_history, self.version, self.device, self.filter, self.keyword, self.country, self.sort_type, self.start_date, self.end_date, page_num)
+        url = 'https://api.qimai.cn/search/searchPageExtend?history=%s&version=%s&device=%s&filter=%s&word=%s&country=%s&date=oneMonth&sort=up_rank&sort_type=%s&type=up&sdate=%s&edate=%s&page=1' % (self.top_history, self.version, self.device, self.filter, self.keyword, self.country, self.sort_type, self.start_date, self.end_date)
         res = session.get(url, headers=headers)
         self.rankGoUp_onePage_data = res.json()
         return self.rankGoUp_onePage_data
@@ -1494,21 +1606,23 @@ class Get_FreePaidGross_RankList(Qimai_Diy_Var):
         * 获取免费、付费、畅销榜产品列表；
         * 举例①：获取游戏畅销榜前100产品信息；
     """
-    def __init__(self, snapshot=''):
+    def __init__(self, snapshot='', run_time=today_date):
         Qimai_Diy_Var.__init__(self)
         self.snapshot = snapshot
+        self.run_time = run_time
 
-    def get_updateTime_list(self):
+    def get_updateTime_data(self):
         """
             * 获取榜单快照更新时间列表；
         """
         url = 'https://api.qimai.cn/rank/indexSnapshot?brand=%s&device=%s&country=%s&genre=%s&date=%s&page=1&is_rank_index=1' %(self.brand, self.device, self.country, self.genre_type, self.run_time)
         res = session.get(url, headers=headers)
-        self.rank_update_List = res.json()
+        self.rank_update_data = res.json()
+        return self.rank_update_data
 
     def get_freeRank_list(self, max_index=1000000):
         """
-            * 获取免费榜产品列表：
+            * 获取免费榜产品列表-所有页面，一页50个：
             :param max_index: 获取产品数量
         """
         self.app_freeRank_list = []
@@ -1523,6 +1637,14 @@ class Get_FreePaidGross_RankList(Qimai_Diy_Var):
             if page_num > res.json()['maxPage'] or run_app_num > max_index:
                 break
         return self.app_freeRank_list
+
+    def get_freeRank_onePage(self):
+        """
+            * 获取免费榜产品列表-第一页：
+        """
+        url = 'https://api.qimai.cn/rank/index?brand=free&device=%s&country=%s&genre=%s&date=%s&snapshot=%s&is_rank_index=1&page=1' % (self.device, self.country, self.genre_type, self.run_time, self.snapshot)
+        res = session.get(url, headers=headers)
+        return res.json()
 
     def get_paidRank_list(self, max_index=1000000):
         """
@@ -1542,6 +1664,14 @@ class Get_FreePaidGross_RankList(Qimai_Diy_Var):
                 break
         return self.app_paidRank_list
 
+    def get_paidRank_onePage(self):
+        """
+            * 获取付费榜产品列表-第一页：
+        """
+        url = 'https://api.qimai.cn/rank/index?brand=paid&device=%s&country=%s&genre=%s&date=%s&snapshot=%s&is_rank_index=1&page=1' % (self.device, self.country, self.genre_type, self.run_time, self.snapshot)
+        res = session.get(url, headers=headers)
+        return res.json()
+
     def get_grossRank_list(self, max_index=1000000):
         """
             * 获取畅销榜产品列表：
@@ -1560,13 +1690,21 @@ class Get_FreePaidGross_RankList(Qimai_Diy_Var):
                 break
         return self.app_grossRank_list
 
+    def get_grossRank_onePage(self):
+        """
+            * 获取畅销榜产品列表-第一页：
+        """
+        url = 'https://api.qimai.cn/rank/index?brand=grossing&device=%s&country=%s&genre=%s&date=%s&snapshot=%s&is_rank_index=1&page=1' % (self.device, self.country, self.genre_type, self.run_time, self.snapshot)
+        res = session.get(url, headers=headers)
+        return res.json()
+
 # 获取预估下载量及预估收入接口；
 class Get_AppDownRevenue_Data(Qimai_Diy_Var):
     """
         * 获取产品预估下载量及预估收入数据；
         * 举例①：获取产品在某时间段内每日预估下载量数据；
     """
-    def __init__(self, appid, start_date, end_date):
+    def __init__(self, appid, start_date=today_date-datetime.timedelta(days=7), end_date=today_date-one_day):
         Qimai_Diy_Var.__init__(self)
         self.appid = appid
         self.start_date = start_date
