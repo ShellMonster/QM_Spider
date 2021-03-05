@@ -43,15 +43,44 @@ class Line_Py(Pyecharts_Var):
         )
         c.set_global_opts(
             title_opts=opts.TitleOpts(title=self.title, subtitle=self.subtitle),
+            tooltip_opts=opts.TooltipOpts(trigger="axis"),
+            legend_opts=opts.LegendOpts(pos_left="center", pos_top='bottom', legend_icon='circle'),
+            yaxis_opts=opts.AxisOpts(
+                type_="value",
+                max_='dataMax',
+                boundary_gap=True,  # 封闭坐标轴，左右都有顶上的刻度线；
+                axislabel_opts=opts.LabelOpts(color="#7D7D7D"),
+                axisline_opts=opts.AxisLineOpts(
+                    linestyle_opts=opts.LineStyleOpts(width=1.5, color="#A0A7B3")
+                ),
+                axistick_opts=opts.AxisTickOpts(is_show=True, is_inside=True),
+                splitline_opts=opts.SplitLineOpts(
+                    is_show=True, linestyle_opts=opts.LineStyleOpts(color="#E2E2E2")
+                ),  # 设置网格线；
+            ),
+            xaxis_opts=opts.AxisOpts(
+                type_="category",
+                boundary_gap=True,
+                axislabel_opts=opts.LabelOpts(color="#7D7D7D"),
+                axisline_opts=opts.AxisLineOpts(
+                    linestyle_opts=opts.LineStyleOpts(width=1.5, color="#A0A7B3")
+                ),
+                axistick_opts=opts.AxisTickOpts(is_show=True, is_inside=True),
+                splitline_opts=opts.SplitLineOpts(
+                    is_show=True, linestyle_opts=opts.LineStyleOpts(color="#E2E2E2")
+                ),
+            ),
         )
-        for num in range(len(self.args[0])):
-            c.add_yaxis(
-                series_name = self.args[0][num],
-                y_axis = self.args[1][num],
-                is_symbol_show=self.is_symbol_show,
-                linestyle_opts=opts.LineStyleOpts(width=self.line_width),
-                label_opts=opts.LabelOpts(is_show=self.is_show)
-            )
+        if len(self.args) > 0:
+            for num in range(len(self.args[0])):
+                print(2)
+                c.add_yaxis(
+                    series_name = self.args[0][num],
+                    y_axis = self.args[1][num],
+                    is_symbol_show=self.is_symbol_show,
+                    linestyle_opts=opts.LineStyleOpts(width=self.line_width),
+                    label_opts=opts.LabelOpts(is_show=self.is_show)
+                )
         self.c_render = c
         return c
 

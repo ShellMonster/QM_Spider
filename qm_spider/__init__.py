@@ -486,14 +486,13 @@ class Qimai_Diy_Var:
     """
         * 便于其他类继承的通用参数区：
     """
-    def __init__(self, country='cn', rank_type='all', version='ios12', device='iphone', brand='all', status=6, genre_type=36, lost_sort='out_time'):
+    def __init__(self, country='cn', rank_type='all', version='ios12', device='iphone', status=6, genre_type=36, lost_sort='out_time'):
         """
             * 类参数区：
             :param country: 国家/地区：默认中国
             :param rank_type: 榜单类型：默认全部榜单
             :param version: 系统版本：默认iOS 12
             :param device: 设备类型：默认iPhone
-            :param brand: 价格类型：默认全部，其他可选例如免费、付费、畅销
             :param status:
             :param genre_type: 榜单类型，默认全部，其他可选输入榜单对应榜单id即可
         """
@@ -501,7 +500,6 @@ class Qimai_Diy_Var:
         self.rank_type = rank_type
         self.version = version
         self.device = device
-        self.brand = brand
         self.status = status
         self.genre_type = genre_type
         self.lost_sort = lost_sort
@@ -569,6 +567,36 @@ class Get_App_Appinfo(Qimai_Diy_Var):
         self.app_version_data = res.json()
         return self.app_version_data
 
+    def get_version_info(self, start_date='', end_date=''):
+        """
+            * 获取App的版本信息：
+            * 可设定时间段，默认全部；
+            * 返回版本的版本号，版本时间等参数
+        """
+        self.get_version(start_date, end_date)
+        if len(self.app_version_data['version']) >= 2:
+            now_version_num = self.app_version_data['version'][0]['version']  # 当前版本号
+            now_version_time = self.app_version_data['version'][0]['release_time']  # 当前版本号时间
+            now_title = self.app_version_data['version'][0]['app_name']  # 当前版本App名称
+            now_subtitle = self.app_version_data['version'][0]['subtitle']  # 当前版本副标题
+            pre_version_num = self.app_version_data['version'][1]['version']
+            pre_version_time = self.app_version_data['version'][1]['release_time']
+            pre_title = self.app_version_data['version'][1]['app_name']
+            pre_subtitle = self.app_version_data['version'][1]['subtitle']
+
+            return [now_version_num, now_version_time, now_title, now_subtitle, pre_version_num, pre_version_time, pre_title, pre_subtitle]
+        else:  # 不大于等于2则小于2，没有多的版本；
+            now_version_num = self.app_version_data['version'][0]['version']  # 当前版本号
+            now_version_time = self.app_version_data['version'][0]['release_time']  # 当前版本号时间
+            now_title = self.app_version_data['version'][0]['app_name']  # 当前版本App名称
+            now_subtitle = self.app_version_data['version'][0]['subtitle']  # 当前版本副标题
+            pre_version_num = ''
+            pre_version_time = ''
+            pre_title = ''
+            pre_subtitle = ''
+
+            return [now_version_num, now_version_time, now_title, now_subtitle, pre_version_num, pre_version_time, pre_title, pre_subtitle]
+
     def get_baseinfo_parameter(self, user_type_name='支持网站'):
         """
             * 获取baseinfo接口下详细参数值，自行指定获取哪个：
@@ -589,9 +617,10 @@ class Get_App_Rank(Qimai_Diy_Var):
         * 根据AppID及对应时间，获取产品榜单数值；
         * 可获取子分类榜单；
         day: 计量时间类型：默认按天，其他可选按分钟、小时\n
-        rankType: 获取排名类型：默认每日排名，其他可选最高排名、全部排名
+        rankType: 获取排名类型：默认每日排名，其他可选最高排名、全部排名\n
+        brand: 价格类型：默认全部，其他可选例如免费、付费、畅销
     """
-    def __init__(self, appid, start_date, end_date, day=1, rankType='day', appRankShow=1, subclass='all', simple=1, rankEchartType=1):
+    def __init__(self, appid, start_date, end_date, day=1, rankType='day', brand='all', appRankShow=1, subclass='all', simple=1, rankEchartType=1):
         Qimai_Diy_Var.__init__(self)
         self.appid = appid
         self.start_date = start_date
@@ -602,6 +631,7 @@ class Get_App_Rank(Qimai_Diy_Var):
         self.subclass = subclass
         self.simple = simple
         self.rankEchartType = rankEchartType
+        self.brand = brand
 
     def get_rank_data(self):
         """
@@ -1062,6 +1092,18 @@ class Get_App_Comment(Qimai_Diy_Var):
         res = session.get(url, headers=headers)
         self.app_commentRateNum = res.json()
         return self.app_commentRateNum
+
+    def get_commentRateNum_add(self, typec='day'):
+        """
+            * 获取1-5星时间段内新增评论数；
+            :param typec: 评论计量时间单位：默认按天
+        """
+        self.get_commentRateNum(typec)
+        pinlun_num_list = []
+        for i in self.app_commentRateNum['rateInfo']:
+            pinlun_num_list.append(i['data'][0][1])  # 新增评论加进去
+
+        return np.sum(pinlun_num_list)
 
     def get_commentNum(self, delete=-1):
         """
@@ -1539,18 +1581,21 @@ class Get_Keyword_HintsRank(Qimai_Diy_Var):
         return res.json()
 
 # 封装关键词落词、新进、上升、下降列表接口；
-class Get_Keyword_LoseNewDownUp_List(Get_Clear_Keyword_List):
+class Get_Keyword_LoseNewDownUp_List(Qimai_Diy_Var):
     """
         * 获取关键词下落榜、新进、上升、下降产品列表相关数据；
         * 举例①：获取当前词落榜产品基本信息，落榜前排名等相关数据；
         top_history: 历史排名，默认全部，可选进入过T10
     """
-    def __init__(self, keyword, start_date=today_date, end_date=today_date, top_history='all'):
-        super(Get_Keyword_LoseNewDownUp_List, self).__init__(start_date, end_date)
+    def __init__(self, keyword, start_date=today_date, end_date=today_date, top_history='all', filter='offline', search_word='', sort_type='desc'):
+        Qimai_Diy_Var.__init__(self)
         self.keyword = keyword
         self.start_date = start_date
         self.end_date = end_date
         self.top_history = top_history
+        self.filter = filter
+        self.search_word = search_word
+        self.sort_type = sort_type
 
     def get_lostApp_list(self):
         """
@@ -1888,10 +1933,12 @@ class Get_Rank_UpDown_List(Qimai_Diy_Var):
     """
         * 获取榜单上升下降较快的产品；
         * 举例①：获取今日下降较快产品；
+        brand: 价格类型：默认全部，其他可选例如免费、付费、畅销
     """
-    def __init__(self, upDown_type='one'):
+    def __init__(self, upDown_type='one', brand='all'):
         Qimai_Diy_Var.__init__(self)
         self.upDown_type = upDown_type
+        self.brand = brand
 
     def get_up_rank(self, max_index=1000000):
         """
@@ -1920,7 +1967,6 @@ class Get_Rank_UpDown_List(Qimai_Diy_Var):
         url = 'https://api.qimai.cn/rank/float?float=up&genre=%s&device=%s&type=%s&brand=%s&country=%s&page=%s' %(self.genre_type, self.device, self.upDown_type, self.brand, self.country, page_num)
         res = session.get(url, headers=headers)
         return res.json()
-
 
     def get_down_rank(self, max_index=1000000):
         """
