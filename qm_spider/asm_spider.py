@@ -1,10 +1,9 @@
-from qm_spider import *
-from qm_spider.email_py import *
-
+from email_py import *
+from . import *
 
 # 封装获取消耗情况的脚本；
 class Get_ASM_Consume:
-    def __init__(self, accountName, accountPwd, X_Apple_Widget_Key='a01459d797984726ee0914a7097e53fad42b70e1f08d09294d14523a1d4f61e1', file_name='ASM-可用余额存取表.csv', file_path='./', push_token='https://oapi.dingtalk.com/robot/send?access_token=f3a590b8c5f4c4777fe0f217067f15132091bff53e2a2143a5daa981d795159d'):
+    def __init__(self, accountName, accountPwd, X_Apple_Widget_Key='a01459d797984726ee0914a7097e53fad42b70e1f08d09294d14523a1d4f61e1', file_name='ASM-可用余额存取表.xlsx', file_path='./', push_url=push_token):
         self.accountName = accountName
         self.accountPwd = accountPwd
         self.X_Apple_Widget_Key = X_Apple_Widget_Key
@@ -16,13 +15,13 @@ class Get_ASM_Consume:
         self.yes_file_path = '%s%s_%s' %(self.file_path, self.yesterday_date, self.file_name)
         self.yes_yes_file_path = '%s%s_%s' %(self.file_path, self.yesterday_date-one_day, self.file_name)
         self.today_file_path = '%s%s_%s' %(self.file_path, self.today_date, self.file_name)
-        self.push_token = push_token
+        self.push_url = push_url
 
     def clear_trash_file(self):
         # 开始执行文件清理；
         now_file_list = os.listdir(self.file_path)
         for now_file_name in now_file_list:
-            if '.csv' in now_file_name and 'ASM-可用余额存取表' in now_file_name:
+            if '.xlsx' in now_file_name and 'ASM-可用余额存取表' in now_file_name:
                 if str(self.today_date) in now_file_name or str(self.today_date - self.one_day) in now_file_name or str(self.yesterday_date - self.one_day) in now_file_name:
                     pass
                 else:
@@ -112,14 +111,16 @@ class Get_ASM_Consume:
             return '当前接口请求异常: %s' %(url)
 
     def asm_consume(self):
+        push_text_list = []  # 汇总推送的内容；
+        df_new = pd.DataFrame({})  # 创建个当天的；
         res_status = self.asm_login()
         if '异常' not in res_status:
             os.system('rm -rf %s' % (self.today_file_path))
             try:
-                df = pd.read_csv('%s' % (self.yes_file_path), header=None)
+                df = pd.read_excel('%s' %(self.yes_file_path))
             except:
-                DingDing_Push('ASM异常推送告警', '### ASM余额监控-异常告警提示\n\n**提示内容：**当前读取前1日存储账单记录异常，已再向前1日读取存储，数据或出现偏移，请注意确认！', push_url=self.push_token).app_args_markdown_push()
-                df = pd.read_csv('%s' % (self.yes_yes_file_path), header=None)
+                DingDing_Push('ASM异常推送告警', '### ASM余额监控-异常告警提示\n\n**提示内容：**当前读取前1日存储账单记录异常，已再向前1日读取存储，数据或出现偏移，请注意确认！', push_url=self.push_url).app_args_markdown_push()
+                df = pd.read_excel('%s' % (self.yes_yes_file_path))
 
             # 正式开始执行；
             run_num = 1
@@ -188,34 +189,37 @@ class Get_ASM_Consume:
 
                                 # 下方获取字段坑存在空值的情况，因前一日获取数据时无导致，可取0；
                                 # print(budget_order_id, int(budget_order_id), len(str(budget_order_id)))
-                                yes_spent_value = float(df[(df[0] == int(budget_order_id))].values[0][2])
-                                # 开始计算；
-                                if float(spent_value) != yes_spent_value:
-                                    yes_run_num = round(spent_value - yes_spent_value, 2)  # 昨日消耗的；
-                                    now_yue_num = budget_amount - spent_value  # 限制消耗金额减去当前总消耗
-                                    now_yue_days = int(math.floor(now_yue_num / yes_run_num))  # 预估还可消耗天数；
-                                else:
-                                    # 如果今日昨日一样，代表没消耗的，就可以跳过；
-                                    yes_run_num = '空'
-                                    now_yue_days = 10000
+                                try:
+                                    yes_spent_value = float(df[(df['账单ID'] == int(budget_order_id))].values[0][2])
 
-                                if now_yue_days <= 7:  # 小于等于7则推送，否则不管；
-                                    print('当前【%s】符合，即将推送...' % (budget_order_id))
-                                    push_title = "【%s】%s" % (advertiser_or_product, 'ASM账户余额推送'),
-                                    push_text = "**当前日期**：%s\n\n**账户备注名**：%s(%s)\n\n**账户公司名**：%s\n\n**昨日消耗**：%s\n\n**累计消耗**：%s\n\n**限制消耗金额**：%s\n\n**预估剩余消耗天数**：**%s天**\n\n**时间区间**：%s至%s\n\n**账号组别**：%s\n\n " % (self.today_date, budget_name, budget_order_status, advertiser_or_product, yes_run_num, spent_value, budget_amount, now_yue_days, start_date, end_date, campaign_group)
-                                    DingDing_Push(push_title, *[push_text], push_url=self.push_token).app_args_markdown_push()
-                                    # 推送成功，进行下一步；
+                                    # 开始计算；
+                                    if float(spent_value) != yes_spent_value:
+                                        yes_run_num = round(spent_value - yes_spent_value, 2)  # 昨日消耗的；
+                                        now_yue_num = budget_amount - spent_value  # 限制消耗金额减去当前总消耗
+                                        now_yue_days = int(math.floor(now_yue_num / yes_run_num))  # 预估还可消耗天数；
+                                    else:
+                                        # 如果今日昨日一样，代表没消耗的，就可以跳过；
+                                        yes_run_num = '空'
+                                        now_yue_days = 10000
+
+                                    if now_yue_days <= 7:  # 小于等于7则推送，否则不管；
+                                        print('当前【%s】符合，加入待推送列表...' % (budget_order_id))
+                                        push_title = "【%s】%s" % (advertiser_or_product, 'ASM账户余额推送'),
+                                        push_text = "**当前日期**：%s\n\n**账户备注名**：%s(%s)\n\n**账户公司名**：%s\n\n**昨日消耗**：%s\n\n**累计消耗**：%s\n\n**限制消耗金额**：%s\n\n**预估剩余消耗天数**：**%s天**\n\n**时间区间**：%s至%s\n\n**账号组别**：%s\n\n " % (self.today_date, budget_name, budget_order_status, advertiser_or_product, yes_run_num, spent_value, budget_amount, now_yue_days, start_date, end_date, campaign_group)
+                                        # DingDing_Push(push_title, *[push_text], push_url=self.push_url).app_args_markdown_push()
+                                        push_text_list.append([push_title, push_text])
+                                        # 推送成功，进行下一步；
+                                except:
+                                    print('当前【%s】获取昨日消耗异常，先存此条数据不推送此条' %(budget_name))
                             else:
                                 pass
 
-                            # 计算余额和可用天数；
-                            pd.DataFrame({
+                            # 存为实例Excel；
+                            df_new = df_new.append(pd.DataFrame({
                                 '账单ID': [int(budget_order_id)],
                                 '日期': [str(self.today_date)],
                                 '消耗总额': [spent_value]
-                            }).to_csv(
-                                self.today_file_path, mode='a', index=False, header=False, encoding='utf-8-sig'
-                            )
+                            }))
                         else:
                             # 如果包含指定的字符就不推送了；
                             pass
@@ -228,13 +232,22 @@ class Get_ASM_Consume:
                     print('本次获取完毕，跳出循环')
                     break
 
-            # 完毕后读取当前csv进行去重，
-            df = pd.read_csv(self.today_file_path, header=None)
-            df = df.drop_duplicates([0, 1, 2], keep='last').to_csv(self.today_file_path, index=False, header=False, encoding='utf-8-sig')
+            # 完毕后读取当前数据进行去重，
+            df_new.drop_duplicates(['账单ID', '日期', '消耗总额'], keep='last', inplace=True)
 
-            # 成功推送；
-            push_title = '%s_余额监控任务' %(self.today_date)
-            DingDing_Push(push_title).status_push()
+            # # 成功推送；
+            # push_title = '%s_余额监控任务' %(self.today_date)
+            # DingDing_Push(push_title).status_push()
+
+            # 存储；
+            df_new.to_excel(
+                self.today_file_path, index=False, encoding='utf-8-sig'
+            )
+
+            # 开始推送；
+            for push_info in push_text_list:
+                DingDing_Push(push_info[0], *[push_info[1]], push_url=self.push_url).app_args_markdown_push()
+                time.sleep(5)
 
         else:
             # 失败推送；

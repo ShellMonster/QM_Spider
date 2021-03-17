@@ -1,7 +1,7 @@
 import random,os
 from multiprocessing.pool import Pool
-from qm_spider.top_keyword import *
-from qm_spider.threading_py import *
+from top_keyword import *
+from threading_py import *
 
 
 # class top_keyword_multiprocessing(top_multiple_keyword_Thread):
@@ -24,6 +24,7 @@ from qm_spider.threading_py import *
 #         end = time.time()
 #         print("%s子进程结束，进程ID：%d。耗时0.2%f" % (self.appname, os.getpid(), end - start))
 
+@auth_check  # 登录检查
 def top_keyword_multiprocessing(appid_list, keyword_hot_start, start_time, end_time, file_path='./'):
     # 创建多个进程，表示可以同时执行的进程数量。默认大小是CPU的核心数
     p = Pool(len(appid_list))

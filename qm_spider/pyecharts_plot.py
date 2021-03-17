@@ -1,4 +1,4 @@
-from qm_spider import *
+from . import *
 from pyecharts.faker import Faker
 from pyecharts import options as opts
 from pyecharts.charts import Bar, Grid, Line, Page, Pie, Timeline, Boxplot, WordCloud

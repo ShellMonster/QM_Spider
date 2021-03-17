@@ -1,5 +1,4 @@
 import zmail
-from qm_spider import *
 
 
 class Send_Mail:

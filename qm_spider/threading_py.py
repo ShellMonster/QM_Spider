@@ -1,10 +1,11 @@
-from qm_spider import *
-from qm_spider.top_keyword import *
+from . import *
+from top_keyword import *
 import threading
 
 
 threadLock = threading.Lock()
 
+@auth_check  # 登录检查
 class Top_Keyword_Thread(threading.Thread):
     def __init__(self, threadID, *args):
         threading.Thread.__init__(self)

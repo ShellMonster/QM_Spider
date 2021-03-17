@@ -8,7 +8,7 @@
 @Copyright：©2019-2021 七麦数据
 """
 
-from qm_spider import *
+from . import *
 
 # 获取需要查询的关键词列表；
 def save_except(keyword, keyword_hot):
@@ -315,7 +315,7 @@ class Get_Search_AppTitle:
             * 检测关键词热度、搜索结果数判断词价值，从66aso取数：
         """
         if '%' not in self.keyword:
-            url = 'https://ios.kuchuan.com/keywordhot?keyword=%s&iosVersion=12' % (keyword)
+            url = 'https://ios.kuchuan.com/keywordhot?keyword=%s&iosVersion=12' % (self.keyword)
             res = requests.get(url, headers=headers)
             return [res.json()['hot'], res.json()['results']]
         else:
@@ -333,12 +333,13 @@ class Get_Search_AppTitle:
             return ['0', '0']
 
 # 生成100字符的主程序；
+@auth_check  # 登录检查
 class Generate_100_Keyword:
     def __init__(self, user_ky_list):
         self.user_ky_list = user_ky_list
         self.spare_keyword_list = []
 
-    def generate_main(self):
+    def generate_correlation_main(self):
         for keyword in self.user_ky_list:
             keyword_info_list = Get_Keyword_Info(keyword).get_keyword_extend(max_index=200, orderBy='relate', order='desc')
             for info_list in keyword_info_list:

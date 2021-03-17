@@ -1,4 +1,4 @@
-from qm_spider import *
+from . import *
 
 
 class Get_Top_Keyword:

@@ -5,7 +5,7 @@ import setuptools
 
 setuptools.setup(
     name="QM_Spider",
-    version="0.0.68",
+    version="0.0.73",
     author="@道长",
     author_email="ctrlf4@yeah.net",
     license='Apache License 2.0',
@@ -41,7 +41,9 @@ setuptools.setup(
         'zmail',
         'multiprocess',
         'python-dateutil',
-        'beautifulsoup4'
+        'beautifulsoup4',
+        'python-pptx',
+        'jieba'
     ]
 )
 

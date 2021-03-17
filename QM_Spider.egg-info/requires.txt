@@ -8,3 +8,5 @@ zmail
 multiprocess
 python-dateutil
 beautifulsoup4
+python-pptx
+jieba
