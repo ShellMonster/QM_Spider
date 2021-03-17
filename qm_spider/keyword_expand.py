@@ -315,7 +315,7 @@ class Get_Search_AppTitle:
             * 检测关键词热度、搜索结果数判断词价值，从66aso取数：
         """
         if '%' not in self.keyword:
-            url = 'https://ios.kuchuan.com/keywordhot?keyword=%s&iosVersion=12' % (keyword)
+            url = 'https://ios.kuchuan.com/keywordhot?keyword=%s&iosVersion=12' % (self.keyword)
             res = requests.get(url, headers=headers)
             return [res.json()['hot'], res.json()['results']]
         else:

@@ -9,6 +9,7 @@ qm_spider/asm_spider.py
 qm_spider/email_py.py
 qm_spider/keyword_expand.py
 qm_spider/multiprocessing_py.py
+qm_spider/pptx_office.py
 qm_spider/pyecharts_plot.py
 qm_spider/threading_py.py
 qm_spider/top_keyword.py

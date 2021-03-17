@@ -52,6 +52,18 @@ headers = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36 Edg/88.0.705.81"
 }
 
+# 登录检查；
+def auth_check(func):
+    def wrapper(*args, **kwargs):
+        url = 'https://api.qimai.cn/account/userinfo'
+        res = session.get(url, headers=headers)
+        if len(res.json()['userinfo']['username']) > 0:
+            func()
+        else:
+            print('尚未使用"Sing_Qimai"类登录七麦数据')
+            exit()
+    return wrapper
+
 # 钉钉推送；
 class DingDing_Push:
     """
@@ -85,6 +97,7 @@ class DingDing_Push:
         }
         payload = json.dumps(payload)
         res = requests.post(self.push_url, data=payload, headers=self.headers)
+        return res.json()
 
     def app_args_markdown_push(self):
         """
@@ -100,6 +113,7 @@ class DingDing_Push:
         }
         payload = json.dumps(payload)
         res = requests.post(self.push_url, data=payload, headers=self.headers)
+        return res.json()
 
     def app_args_text_push(self):
         payload = {
@@ -110,6 +124,7 @@ class DingDing_Push:
         }
         payload = json.dumps(payload)
         res = requests.post(self.push_url, data=payload, headers=self.headers)
+        return res.json()
 
 # 自动登录；
 class Sing_Qimai:
