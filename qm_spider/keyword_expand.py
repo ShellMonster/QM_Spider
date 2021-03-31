@@ -31,6 +31,7 @@ def save_backup(keyword, keyword_len, keyword_all_num):
         './%s-关键词-扩展性计算.csv' % (str(datetime.date.today())), mode='a', encoding='utf-8-sig', index=False, header=False
     )
 
+@qm_auth_check  # 登录检查；
 class Calc_Keyword_Expand:
     def __init__(self, file_path):
         self.file_path = file_path
@@ -109,6 +110,7 @@ class Calc_Keyword_Expand:
         df_new.to_excel('./%s_关键词扩展性计算.xlsx' % (app_name), index=False)
 
 # 分词算法汇总；
+@qm_auth_check  # 登录检查；
 class Jieba_Word_algorithm:
     def __init__(self, keyword_list):
         self.keyword_list = keyword_list
@@ -235,6 +237,7 @@ class Jieba_Word_algorithm:
             word_itc = word_itc + now_word  # 拼接
 
 # 关键词搜索数据抓取版汇总；
+@qm_auth_check  # 登录检查；
 class Get_Search_AppTitle:
     def __init__(self, keyword):
         self.keyword = keyword
@@ -333,7 +336,7 @@ class Get_Search_AppTitle:
             return ['0', '0']
 
 # 生成100字符的主程序；
-@auth_check  # 登录检查
+@qm_auth_check  # 登录检查；
 class Generate_100_Keyword:
     def __init__(self, user_ky_list):
         self.user_ky_list = user_ky_list

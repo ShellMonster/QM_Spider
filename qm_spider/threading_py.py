@@ -5,7 +5,7 @@ import threading
 
 threadLock = threading.Lock()
 
-@auth_check  # 登录检查
+@qm_auth_check  # 登录检查；
 class Top_Keyword_Thread(threading.Thread):
     def __init__(self, threadID, *args):
         threading.Thread.__init__(self)

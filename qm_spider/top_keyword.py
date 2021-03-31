@@ -1,6 +1,6 @@
 from qm_spider import *
 
-
+@qm_auth_check  # 登录检查；
 class Get_Top_Keyword:
     def __init__(self, appid, keyword_hot_start, start_time, end_time, keyword_hot_end=150000):
         self.keyword_hot_start = keyword_hot_start
@@ -71,7 +71,7 @@ class Get_Top_Keyword:
         })
         return df
 
-
+@qm_auth_check  # 登录检查；
 class Get_Multiple_Top_Keyword():
     def __init__(self, appid_list, keyword_hot_start, start_time, end_time, file_path='./'):
         for appid in appid_list:

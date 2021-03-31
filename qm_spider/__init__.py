@@ -56,12 +56,11 @@ headers = {
 }
 
 # 登录检查；
-def auth_check(func):
+def qm_auth_check(func):
     def wrapper(*args, **kwargs):
-        url = 'https://api.qimai.cn/account/userinfo'
-        res = session.get(url, headers=headers)
-        if len(res.json()['userinfo']['username']) > 0:
-            return func(*args, **kwargs)
+        for cookie_info in list(session.cookies):
+            if 'qimai.cn' in str(cookie_info):
+                return func(*args, **kwargs)
         else:
             print('尚未使用"Sing_Qimai"类登录七麦数据')
             exit()
@@ -471,6 +470,7 @@ class Qimai_Outside_Tool:
         return df_dataframe_all
 
 # 计算七麦内的备用工具；
+@qm_auth_check  # 登录检查；
 class Qimai_Intside_Tool:
     """
         * 七麦接口内的一些通用处理规则；
@@ -563,6 +563,7 @@ class Qimai_Intside_Tool:
 
 #=============核心运行类区=============#
 # 获取基础信息相关数据；
+@qm_auth_check  # 登录检查；
 class Get_App_Appinfo():
     def __init__(self, appid, country='cn'):
         self.appid = appid
@@ -670,6 +671,7 @@ class Get_App_Appinfo():
             return '未找到'
 
 # 获取榜单相关数据；
+@qm_auth_check  # 登录检查；
 class Get_App_Rank():
     """
         * 根据AppID及对应时间，获取产品榜单数值；
@@ -783,6 +785,7 @@ class Get_App_Rank():
 
 
 # 获取开发商相关数据；
+@qm_auth_check  # 登录检查；
 class Get_App_SamePubApp(Get_App_Appinfo):
     """
         * 获取开发商相关数据；
@@ -831,6 +834,7 @@ class Get_App_SamePubApp(Get_App_Appinfo):
         return max(cp_quanzhong_list)
 
 # 获取关键词的相关数据；
+@qm_auth_check  # 登录检查；
 class Get_Keyword_Info():
     """
         * 获取关键词下相关数据；
@@ -1066,6 +1070,7 @@ class Get_Keyword_Info():
         return self.wordID
 
 # 获取产品的关键词相关数据；
+@qm_auth_check  # 登录检查；
 class Get_App_Keyword():
     """
         * 获取App的关键词相关信息；
@@ -1240,6 +1245,7 @@ class Get_App_Keyword():
                     return ['覆盖不合格', all_keyword, top3_keyword, top10_keyword]
 
 # 获取产品评论的相关接口；
+@qm_auth_check  # 登录检查；
 class Get_App_Comment():
     """
         * 获取App的评论相关数据；
@@ -1346,6 +1352,7 @@ class Get_App_Comment():
         return total_num, ratingAverage_rate
 
 # 获取清榜列表相关数据；
+@qm_auth_check  # 登录检查；
 class Get_Clear_Rank_List():
     """
         * 获取清榜列表相关数据；
@@ -1389,6 +1396,7 @@ class Get_Clear_Rank_List():
 
 
 # 获取清词列表相关数据；
+@qm_auth_check  # 登录检查；
 class Get_Clear_Keyword_List():
     """
         * 获取清词列表相关数据(清词的产品多所以按日展示的)；
@@ -1436,6 +1444,7 @@ class Get_Clear_Keyword_List():
         return res.json()
 
 # 获取上架、下架产品列表相关数据；
+@qm_auth_check  # 登录检查；
 class Get_App_ON_Offline_List():
     """
         * 获取上架、下架列表相关数据(上下架的产品多所以按日展示的)；
@@ -1505,6 +1514,7 @@ class Get_App_ON_Offline_List():
         return res.json()
 
 # 获取预订App列表；
+@qm_auth_check  # 登录检查；
 class Get_PreOrder_AppList():
     """
         * 获取预订App列表相关数据；
@@ -1548,6 +1558,7 @@ class Get_PreOrder_AppList():
         return res.json()
 
 # 获取产品被精品推荐及上热搜情况列表；
+@qm_auth_check  # 登录检查；
 class Get_App_Recommend():
     """
         * 获取产品精品推荐及热搜列表相关数据；
@@ -1612,6 +1623,7 @@ class Get_App_Recommend():
         return match_num, continue_time
 
 # 获取App不同状态列表；
+@qm_auth_check  # 登录检查；
 class Get_App_Status():
     """
         * 获取App状态列表相关数据；
@@ -1720,6 +1732,7 @@ class Get_App_Status():
             return ''
 
 # 封装指数排行榜接口；
+@qm_auth_check  # 登录检查；
 class Get_Keyword_HintsRank():
     """
         * 获取指数排行榜列表相关数据；
@@ -1771,6 +1784,7 @@ class Get_Keyword_HintsRank():
         return res.json()
 
 # 封装关键词落词、新进、上升、下降列表接口；
+@qm_auth_check  # 登录检查；
 class Get_Keyword_LoseNewDownUp_List():
     """
         * 获取关键词下落榜、新进、上升、下降产品列表相关数据；
@@ -1944,6 +1958,7 @@ class Get_Keyword_LoseNewDownUp_List():
 
 
 # 获取免费、付费、畅销榜单产品列表；
+@qm_auth_check  # 登录检查；
 class Get_FreePaidGross_RankList():
     """
         * 获取免费、付费、畅销榜产品列表；
@@ -2045,6 +2060,7 @@ class Get_FreePaidGross_RankList():
         return res.json()
 
 # 获取预估下载量及预估收入接口；
+@qm_auth_check  # 登录检查；
 class Get_AppDownRevenue_Data():
     """
         * 获取产品预估下载量及预估收入数据；
@@ -2076,6 +2092,7 @@ class Get_AppDownRevenue_Data():
         return self.app_revenueNum_list
 
 # 获取iOS 14/iOS 13、iOS 12热搜；
+@qm_auth_check  # 登录检查；
 class Get_HotSearch_Data():
     """
         * 获取热搜相关数据；
@@ -2127,6 +2144,7 @@ class Get_HotSearch_Data():
         return self.date_hotSearch_monitor
 
 # 榜单上升下降最快数据；
+@qm_auth_check  # 登录检查；
 class Get_Rank_UpDown_List():
     """
         * 获取榜单上升下降较快的产品；
@@ -2197,6 +2215,7 @@ class Get_Rank_UpDown_List():
         return res.json()
 
 # 获取各类覆盖排行榜；
+@qm_auth_check  # 登录检查；
 class Get_Cover_Rank():
     """
         * 获取各类覆盖排行榜；
