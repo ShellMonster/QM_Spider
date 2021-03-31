@@ -1,5 +1,5 @@
-from . import *
-from top_keyword import *
+from qm_spider import *
+from qm_spider.top_keyword import *
 import threading
 
 

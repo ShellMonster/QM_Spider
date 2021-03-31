@@ -1,5 +1,5 @@
-from email_py import *
-from . import *
+from qm_spider import *
+
 
 # 封装获取消耗情况的脚本；
 class Get_ASM_Consume:

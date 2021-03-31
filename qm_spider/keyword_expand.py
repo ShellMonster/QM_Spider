@@ -8,7 +8,7 @@
 @Copyright：©2019-2021 七麦数据
 """
 
-from . import *
+from qm_spider import *
 
 # 获取需要查询的关键词列表；
 def save_except(keyword, keyword_hot):

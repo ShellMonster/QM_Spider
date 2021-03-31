@@ -5,6 +5,7 @@ from pandas.io.json import json_normalize
 from urllib.parse import quote
 import pandas as pd
 import numpy as np
+from tqdm import tqdm
 from bs4 import BeautifulSoup
 from scipy.stats import norm, mstats
 from urllib.parse import quote
@@ -65,6 +66,15 @@ def auth_check(func):
             print('尚未使用"Sing_Qimai"类登录七麦数据')
             exit()
     return wrapper
+
+# # 运行进度条；
+# def progress_bar(func):
+#     def wrapper(*args, **kwargs):
+#         # 使用进度条运行；
+#         for num in tqdm(range(len(keyword_list))):
+#             keyword = keyword_list[num]
+#         return func(*args, **kwargs)
+#     return wrapper
 
 # 钉钉推送；
 class DingDing_Push:
@@ -193,16 +203,25 @@ class Qimai_Outside_Tool:
             * 获取今日星期几：
         """
         week_day = {
-            0: '星期一',
-            1: '星期二',
-            2: '星期三',
-            3: '星期四',
-            4: '星期五',
-            5: '星期六',
-            6: '星期日',
+            '0': '星期一',
+            '1': '星期二',
+            '2': '星期三',
+            '3': '星期四',
+            '4': '星期五',
+            '5': '星期六',
+            '6': '星期日'
         }
-        day = self.data_info[0].weekday()  # weekday()可以获得是星期几
-        return week_day[day]
+        if len(str(self.data_info[0])) == 1:
+            return week_day[str(self.data_info[0])]
+        elif len(str(self.data_info[0])) == 10:
+            day = datetime.datetime.fromisoformat(str(self.data_info[0])).weekday()  # weekday()可以获得是星期几
+            return week_day[day]
+        elif len(str(self.data_info[0])) == 19:
+            day = datetime.datetime.strptime(str(self.data_info[0])[:19], '%Y-%m-%d %H:%M:%S').weekday()  # weekday()可以获得是星期几
+            return week_day[day]
+        else:
+            day = self.data_info[0].weekday()  # weekday()可以获得是星期几
+            return week_day[day]
 
     def get_index_list_num(self):
         """
@@ -490,6 +509,27 @@ class Qimai_Intside_Tool:
                 return app_rank['data'][-1][0]
         else:
             return 0
+
+    def get_match_keywordHints(self, columns_name='关键词'):
+        """
+            * 根据当前关键词表格(df)，自动匹配关键词当前指数；
+            * 返回列表，自动使用到新列即可；
+        """
+        keyword_hints_list = []
+        keyword_list = []
+        for num, keyword in enumerate(self.data_info[0][columns_name].tolist()):
+            print('正在获取第【%s】个关键词【%s】的热度，剩余【%s】行' %(num+1, keyword, self.data_info[0].shape[0]-(num+1)))
+            if keyword not in keyword_list:
+                keyword_hints = Get_Keyword_Info(keyword).get_keyword_hints()
+                keyword_hints_list.append(keyword_hints)
+                keyword_list.append(keyword)
+            else:
+                keyword_index = keyword_list.index(keyword)
+                keyword_hints = keyword_hints_list[keyword_index]
+                keyword_hints_list.append(keyword_hints)
+                keyword_list.append(keyword)
+
+        return keyword_hints_list
 
     def lost_keyword_calc(self, appid, start_date, end_date):
         """
@@ -861,6 +901,17 @@ class Get_Keyword_Info():
         self.keyword_WordInfo = res.json()
         return self.keyword_WordInfo
 
+    def get_keyword_ChangeRate(self, type='top10'):
+        """
+            * 获取关键词的变动率数据；
+            * 默认T10变动率，且默认为昨日到今日的数据；
+            :param type: 查看T10还是全部，例：top10
+        """
+        url = 'https://api.qimai.cn/search/keywordChangeRate?device=%s&word=%s&type=%s&version=%s&sdate=%s&edate=%s' %(self.device, self.keyword, type, self.version, self.start_date, self.end_date)
+        res = session.get(url, headers=headers)
+        self.keyword_ChangeRate = res.json()
+        return self.keyword_ChangeRate
+
     def get_keywordHistory_hints(self):
         """
             * 获取时间段内关键词历史热度：
@@ -1106,7 +1157,7 @@ class Get_App_Keyword():
         self.app_AnalysisDataKeyword = res.json()
         return self.app_AnalysisDataKeyword
 
-    def get_keywordHistory_rank(self, keyword, start_date, end_date, day=1):
+    def get_keywordHistory_rank(self, keyword, start_date=today_date-datetime.timedelta(7), end_date=today_date, day=1):
         """
             * 获取时间段内关键词历史排名数据；
             * 可指定按分钟、小时、天，具体参考官网，默认按天；
@@ -1201,6 +1252,14 @@ class Get_App_Comment():
         self.end_date = end_date
         self.country = country
 
+    def get_commentRate(self):
+        """
+            * 获取App当前的总评分、平均分等(返回json)，仅需appid参数；
+        """
+        url = 'https://api.qimai.cn/app/commentRate?appid=%s&country=%s' %(self.appid, self.country)
+        res = session.get(url, headers=headers)
+        return res.json()
+
     def get_commentRateNum(self, typec='day'):
         """
             * 获取1-5星每个星级每天的评论增删数量；
@@ -1276,6 +1335,15 @@ class Get_App_Comment():
         df['日期'] = df['日期'].apply(lambda x: Qimai_Outside_Tool(x).time_to_date())
         df = df.groupby('日期').sum()
         return df
+
+    def get_commentRate_num(self):
+        """
+            * 获取App当前的总评分、平均分数值(返回2个值)，仅需appid参数；
+        """
+        res_json = self.get_commentRate()
+        total_num = res_json['rateInfo']['current']['total']
+        ratingAverage_rate = res_json['rateInfo']['current']['ratingAverage']
+        return total_num, ratingAverage_rate
 
 # 获取清榜列表相关数据；
 class Get_Clear_Rank_List():

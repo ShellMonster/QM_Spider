@@ -1,4 +1,4 @@
-from . import *
+from qm_spider import *
 from pyecharts.faker import Faker
 from pyecharts import options as opts
 from pyecharts.charts import Bar, Grid, Line, Page, Pie, Timeline, Boxplot, WordCloud
@@ -19,9 +19,9 @@ class Pyecharts_Var:
         self.color_list = color_list
         self.args = args
         self.title = title
-        self.x_value = x_value
+        self.x_value = [str(i) for i in x_value]
         self.y_name = y_name
-        self.y_value = y_value
+        self.y_value = [float(i) for i in y_value]
 
     def render_to_png(self, c):
         make_snapshot(snapshot, c.render(), "./%s.png" %(self.title))
@@ -220,6 +220,33 @@ class Bar_Py(Pyecharts_Var):
         c.add_yaxis(self.y_name, self.y_value)
         c.set_global_opts(
             title_opts=opts.TitleOpts(title=self.title, subtitle=self.subtitle),
+            tooltip_opts=opts.TooltipOpts(trigger="axis"),
+            legend_opts=opts.LegendOpts(pos_left="center", pos_top='bottom', legend_icon='circle'),
+            yaxis_opts=opts.AxisOpts(
+                type_="value",
+                max_='dataMax',
+                boundary_gap=True,  # 封闭坐标轴，左右都有顶上的刻度线；
+                axislabel_opts=opts.LabelOpts(color="#7D7D7D"),
+                axisline_opts=opts.AxisLineOpts(
+                    linestyle_opts=opts.LineStyleOpts(width=1.5, color="#A0A7B3")
+                ),
+                axistick_opts=opts.AxisTickOpts(is_show=True, is_inside=True),
+                splitline_opts=opts.SplitLineOpts(
+                    is_show=True, linestyle_opts=opts.LineStyleOpts(color="#E2E2E2")
+                ),  # 设置网格线；
+            ),
+            xaxis_opts=opts.AxisOpts(
+                type_="category",
+                boundary_gap=True,
+                axislabel_opts=opts.LabelOpts(color="#7D7D7D"),
+                axisline_opts=opts.AxisLineOpts(
+                    linestyle_opts=opts.LineStyleOpts(width=1.5, color="#A0A7B3")
+                ),
+                axistick_opts=opts.AxisTickOpts(is_show=True, is_inside=True),
+                splitline_opts=opts.SplitLineOpts(
+                    is_show=True, linestyle_opts=opts.LineStyleOpts(color="#E2E2E2")
+                ),
+            )
         )
         for agr_data in self.args:
             c.add_yaxis(agr_data[0], agr_data[1])

@@ -1,7 +1,7 @@
 import random,os
 from multiprocessing.pool import Pool
-from top_keyword import *
-from threading_py import *
+from qm_spider.top_keyword import *
+from qm_spider.threading_py import *
 
 
 # class top_keyword_multiprocessing(top_multiple_keyword_Thread):

@@ -17,7 +17,7 @@ from pptx.dml.color import RGBColor
 from pptx.shapes.group import GroupShape
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 from pptx.enum.dml import MSO_FILL_TYPE
-from . import *
+from qm_spider import *
 
 # 设置自动检测，检测文字并操作；
 class Text_Frame_Detect:
