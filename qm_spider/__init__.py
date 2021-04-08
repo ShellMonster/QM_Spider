@@ -5,7 +5,6 @@ from pandas.io.json import json_normalize
 from urllib.parse import quote
 import pandas as pd
 import numpy as np
-from tqdm import tqdm
 from bs4 import BeautifulSoup
 from scipy.stats import norm, mstats
 from urllib.parse import quote
@@ -64,6 +63,19 @@ def qm_auth_check(func):
         else:
             print('尚未使用"Sing_Qimai"类登录七麦数据')
             exit()
+    # 当函数被装饰的时候, 返回装饰器内闭包函数的引用
+    return wrapper
+
+# 运行时间统计；
+def run_time_calc(func):
+    def wrapper(*args, **kwargs):
+        begin_time = time.time()
+        retc = func(*args, **kwargs)
+        end_time = time.time()
+        Run_time = end_time - begin_time
+        print("【%s】函数运行时间为：%s秒" %(func.__name__, str(round(Run_time, 2))))
+        return retc
+    # 当函数被装饰的时候, 返回装饰器内闭包函数的引用
     return wrapper
 
 # # 运行进度条；
@@ -680,7 +692,7 @@ class Get_App_Rank():
         rankType: 获取排名类型：默认每日排名，其他可选最高排名、全部排名\n
         brand: 价格类型：默认全部，其他可选例如免费、付费、畅销
     """
-    def __init__(self, appid, start_date, end_date, day=1, rankType='day', brand='all', appRankShow=1, subclass='all', simple=1, rankEchartType=1, country='cn', device='iphone'):
+    def __init__(self, appid, start_date=today_date-datetime.timedelta(days=6), end_date=today_date, day=1, rankType='day', brand='all', appRankShow=1, subclass='all', simple=1, rankEchartType=1, country='cn', device='iphone'):
         self.appid = appid
         self.start_date = start_date
         self.end_date = end_date
@@ -783,17 +795,41 @@ class Get_App_Rank():
             print('获取错误，请重试')
             return rank_type_info
 
+    def get_type_rankNum(self):
+        """
+            * 获取App的总榜、一级分类、一级分类榜单、二级分类、二级分类榜单；
+            * 返回数据第1、2个为字符串，第3个为列表，对应总榜榜单、一级分类榜单、二级分类榜单；
+        """
+        one_type, two_type = Get_App_SamePubApp(appid).get_app_genName()
+        two_rank_data = Get_App_Rank(appid, today_date, today_date).get_rank_data()
+        app_rank_info = ['', '', '']
+        if two_rank_data['msg'] == '未获取到排行数据' or two_rank_data['msg'] == '当前应用信息暂时无法提供':
+            return one_type, two_type, app_rank_info # 返回总榜、一级分类榜、二级分类榜榜单；
+        else:
+            for i in two_rank_data['data']['list']:
+                if i['name'] == one_type:
+                    rank_num = i['data'][-1][0]
+                    app_rank_info[1] = rank_num
+                elif i['name'] == two_type:
+                    rank_num = i['data'][-1][0]
+                    app_rank_info[2] = rank_num
+                elif '总榜' in i['name']:
+                    rank_num = i['data'][-1][0]
+                    app_rank_info[0] = rank_num
+        # 返回数据；
+        return one_type, two_type, app_rank_info  # 返回总榜、一级分类榜、二级分类榜榜单；
 
 # 获取开发商相关数据；
 @qm_auth_check  # 登录检查；
-class Get_App_SamePubApp(Get_App_Appinfo):
+class Get_App_SamePubApp():
     """
         * 获取开发商相关数据；
         * 举例①：获取开发商名称；
         * 举例②：获取开发商权重评分(写死的打分规则)；
     """
-    def __init__(self, appid):
-        Get_App_Appinfo.__init__(self, appid)
+    def __init__(self, appid, country='cn'):
+        self.appid = appid
+        self.country = country
 
     def get_samePubApp(self):
         """
@@ -1162,15 +1198,16 @@ class Get_App_Keyword():
         self.app_AnalysisDataKeyword = res.json()
         return self.app_AnalysisDataKeyword
 
-    def get_keywordHistory_rank(self, keyword, start_date=today_date-datetime.timedelta(7), end_date=today_date, day=1):
+    def get_keywordHistory_rank(self, keyword, start_date=today_date-datetime.timedelta(7), end_date=today_date, day=1, word_id=''):
         """
-            * 获取时间段内关键词历史排名数据；
+            * 获取时间段内关键词历史排名数据(word_id可无，函数自带获取方式)；
             * 可指定按分钟、小时、天，具体参考官网，默认按天；
             :param keyword: 关键词
             :param start_date: 开始日期
             :param end_date: 结束日期
         """
-        word_id = Get_Keyword_Info(keyword).get_keyword_wordID()
+        if len(str(word_id)) == 0:
+            word_id = Get_Keyword_Info(keyword).get_keyword_wordID()
         url = 'https://api.qimai.cn/app/keywordHistory?version=%s&device=%s&country=%s&appid=%s&day=%s&sdate=%s&edate=%s&word_id=%s&word=%s' %(self.version, self.device, self.country, self.appid, day, start_date, end_date, word_id, keyword)
         res = session.get(url, headers=headers)
         self.app_keywordHistor_data = res.json()
@@ -1791,7 +1828,7 @@ class Get_Keyword_LoseNewDownUp_List():
         * 举例①：获取当前词落榜产品基本信息，落榜前排名等相关数据；
         top_history: 历史排名，默认全部，可选进入过T10
     """
-    def __init__(self, keyword, start_date=today_date, end_date=today_date, country='cn', version='ios12', device='iphone', top_history='all', filter='offline', search_word='', sort_type='desc'):
+    def __init__(self, keyword, start_date=today_date-datetime.timedelta(30), end_date=today_date, country='cn', version='ios12', device='iphone', top_history='all', filter='offline', search_word='', sort_type='desc'):
         self.keyword = keyword
         self.start_date = start_date
         self.end_date = end_date

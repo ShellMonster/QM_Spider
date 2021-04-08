@@ -9,7 +9,7 @@ threadLock = threading.Lock()
 class Top_Keyword_Thread(threading.Thread):
     def __init__(self, threadID, *args):
         threading.Thread.__init__(self)
-        self.appid = threadID
+        # self.appid = threadID
         self.name = Get_App_Appinfo(args[0]).get_subname()
         self.args = args
 

@@ -5,7 +5,7 @@ import setuptools
 
 setuptools.setup(
     name="QM_Spider",
-    version="0.0.78",
+    version="0.0.81",
     author="@道长",
     author_email="ctrlf4@yeah.net",
     license='Apache License 2.0',

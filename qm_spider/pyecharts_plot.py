@@ -260,7 +260,10 @@ class WordCloud_Py:
         self.args = args
 
     def jieba_cut(self, length_num=0):
-        word_data = re.sub('\W*', '', self.args[0])
+        if type(self.args[0]) == list:
+            word_data = ''.join(self.args[0])
+        else:
+            word_data = re.sub('\W*', '', self.args[0])
         word_list = jieba.cut(word_data)
         self.word_cut_result = ','.join(word_list).split(',')
         counter = Counter(self.word_cut_result)
