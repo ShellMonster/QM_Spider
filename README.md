@@ -7,7 +7,9 @@ QM_Spider
 pip3 install qm_spider
 ```
 * 升级
+```
 pip3 install --upgrade qm_spider
+```
 
 
 ### 文件说明：
