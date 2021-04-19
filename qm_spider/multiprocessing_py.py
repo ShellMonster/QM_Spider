@@ -38,10 +38,10 @@ def top_keyword_multiprocessing(appid_list, keyword_hot_start, start_time, end_t
 
 def multiprocessing_run(appid, keyword_hot_start, start_time, end_time, file_path):
     time.sleep(random.random() * 3)
-    appname = Get_App_Appinfo(appid).get_subname()
-    print("【%s】子进程开始，进程ID：%d" % (appname, os.getpid()))
+    app_name = Get_App_Appinfo(appid).get_subname().replace(' ', '')
+    print("【%s】子进程开始，进程ID：%d" % (app_name, os.getpid()))
     old_seconds = datetime.datetime.now()
-    Get_Top_Keyword(appid, keyword_hot_start, start_time, end_time).df_to_excel(file_path)
+    Get_Top_Keyword(appid, keyword_hot_start, start_time, end_time, app_name).df_to_excel(file_path)
     now_seconds = datetime.datetime.now()
     interval_seconds =round((now_seconds - old_seconds).seconds/60, 2)
-    print("【%s】子进程结束，进程ID：%d；当前 %s ，耗时%s分钟" % (appname, os.getpid(), str(now_seconds)[:19], interval_seconds))
+    print("【%s】子进程结束，进程ID：%d；当前 %s ，耗时%s分钟" % (app_name, os.getpid(), str(now_seconds)[:19], interval_seconds))

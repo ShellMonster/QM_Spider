@@ -2,13 +2,14 @@ from qm_spider import *
 
 @qm_auth_check  # 登录检查；
 class Get_Top_Keyword:
-    def __init__(self, appid, keyword_hot_start, start_time, end_time, keyword_hot_end=150000):
+    def __init__(self, appid, keyword_hot_start, start_time, end_time, app_name, keyword_hot_end=150000):
         self.keyword_hot_start = keyword_hot_start
         self.keyword_hot_end = keyword_hot_end
         self.appid = appid
         self.start_time = datetime.date.fromisoformat(start_time)
         self.end_time = datetime.date.fromisoformat(end_time)
         self.one_day = datetime.timedelta(days=1)
+        self.app_name = app_name
 
     def df_to_excel(self, file_path='./'):
         df = self.get_all_top()
@@ -17,7 +18,6 @@ class Get_Top_Keyword:
         )
 
     def get_all_top(self):
-        self.app_name = Get_App_Appinfo(self.appid).get_subname()
         self.t1_all_list = []
         self.t2_all_list = []
         self.t3_all_list = []

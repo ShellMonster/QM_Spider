@@ -92,6 +92,7 @@ class Get_ASM_Consume:
                         'X-Requested-With': 'XMLHttpRequest'
                     }
                     res = session.get(url, headers=headers, verify=False)
+                    self.defOrg_id = res.json()['data']['userDetails']['defOrg']
                     if res.status_code == 200:
                         self.res_token_cm = session.cookies.get_dict()['XSRF-TOKEN-CM']
                         print('...正在获取Token...')
@@ -110,10 +111,29 @@ class Get_ASM_Consume:
             print('...模拟启动浏览器失败...请重试...')
             return '当前接口请求异常: %s' %(url)
 
+    def asm_credits(self):
+        url = 'https://app.searchads.apple.com/cm/api/v1/orgs/%s/locdetails' %(self.defOrg_id)
+        headers = {
+            'Host': 'app.searchads.apple.com',
+            'Connection': 'keep-alive',
+            'Content-Type': 'application/json;charset=UTF-8',
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36',
+            'X-XSRF-TOKEN-CM': self.res_token_cm
+        }
+        res = session.get(url, headers=headers, verify=False, timeout=5)
+        return res.json()['data']['availableCredit'][0]['availableAmount']['value']
+
     def asm_consume(self):
         push_text_list = []  # 汇总推送的内容；
         df_new = pd.DataFrame({})  # 创建个当天的；
         res_status = self.asm_login()
+        headers = {
+            'Host': 'app.searchads.apple.com',
+            'Connection': 'keep-alive',
+            'Content-Type': 'application/json;charset=UTF-8',
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36',
+            'X-XSRF-TOKEN-CM': self.res_token_cm
+        }
         if '异常' not in res_status:
             os.system('rm -rf %s' % (self.today_file_path))
             try:
@@ -146,13 +166,6 @@ class Get_ASM_Consume:
                         },
                     "budgetOrderType": "owned",
                     "addCampaignGroupAssignments": True
-                }
-                headers = {
-                    'Host': 'app.searchads.apple.com',
-                    'Connection': 'keep-alive',
-                    'Content-Type': 'application/json;charset=UTF-8',
-                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36',
-                    'X-XSRF-TOKEN-CM': self.res_token_cm
                 }
                 res = session.post(url, headers=headers, data=json.dumps(payload), verify=False)
                 if len(res.json()['data']) > 0:
@@ -232,6 +245,29 @@ class Get_ASM_Consume:
                     print('本次获取完毕，跳出循环')
                     break
 
+            # 存为实例Excel；
+            today_credits_num = self.asm_credits()
+            print('当前账户可用信用额度：', today_credits_num)
+            df_new = df_new.append(pd.DataFrame({
+                '账单ID': [int(self.defOrg_id)],
+                '日期': [str(self.today_date)],
+                '消耗总额': [today_credits_num]
+            }))
+            # 开始计算；
+            yes_credits_num  = float(df[(df['账单ID'] == int(self.defOrg_id))].values[0][2])
+            if float(today_credits_num) != yes_credits_num:
+                yes_run_num = round(yes_credits_num - today_credits_num, 2)  # 昨日消耗的；
+                # now_yue_num = budget_amount - spent_value  # 限制消耗金额减去当前总消耗
+                now_yue_days = math.floor(float(today_credits_num) / yes_run_num)  # 预估还可消耗天数；
+            else:
+                # 如果今日昨日一样，代表没消耗的，就可以跳过；
+                yes_run_num = '空'
+                now_yue_days = '∞∞∞'
+            # 加入推送列表；
+            push_title = '七麦科技-ASM账户总可用信用额度监控'
+            asm_link = 'https://app.searchads.apple.com/cm/app/settings/billing/loc'
+            push_text = "### %s-七麦科技-ASM信用额度提醒 \n\n**今日可用的信用额度**：[%s(USD)](%s)\n\n**昨日可用的信用额度**：%s(USD)\n\n**昨日消耗信用额度**：%s(USD)\n\n**预估剩余可用天数**：**%s天**" % (self.today_date, round(today_credits_num, 2), asm_link, round(yes_credits_num, 2), yes_run_num, now_yue_days)
+            push_text_list.append([push_title, push_text])
             # 完毕后读取当前数据进行去重，
             df_new.drop_duplicates(['账单ID', '日期', '消耗总额'], keep='last', inplace=True)
 

@@ -803,9 +803,7 @@ class Get_App_Rank():
         one_type, two_type = Get_App_SamePubApp(appid).get_app_genName()
         two_rank_data = Get_App_Rank(appid, today_date, today_date).get_rank_data()
         app_rank_info = ['', '', '']
-        if two_rank_data['msg'] == '未获取到排行数据' or two_rank_data['msg'] == '当前应用信息暂时无法提供':
-            return one_type, two_type, app_rank_info # 返回总榜、一级分类榜、二级分类榜榜单；
-        else:
+        if two_rank_data['msg'] == '成功':
             for i in two_rank_data['data']['list']:
                 if i['name'] == one_type:
                     rank_num = i['data'][-1][0]
@@ -816,6 +814,8 @@ class Get_App_Rank():
                 elif '总榜' in i['name']:
                     rank_num = i['data'][-1][0]
                     app_rank_info[0] = rank_num
+        else:
+            return one_type, two_type, app_rank_info # 返回总榜、一级分类榜、二级分类榜榜单；
         # 返回数据；
         return one_type, two_type, app_rank_info  # 返回总榜、一级分类榜、二级分类榜榜单；
 
