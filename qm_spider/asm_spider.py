@@ -257,8 +257,11 @@ class Get_ASM_Consume:
             yes_credits_num  = float(df[(df['账单ID'] == int(self.defOrg_id))].values[0][2])
             if float(today_credits_num) != yes_credits_num:
                 yes_run_num = round(yes_credits_num - today_credits_num, 2)  # 昨日消耗的；
-                # now_yue_num = budget_amount - spent_value  # 限制消耗金额减去当前总消耗
-                now_yue_days = math.floor(float(today_credits_num) / yes_run_num)  # 预估还可消耗天数；
+                if yes_run_num < 0: # 如果是负值说明充值了额度(因为前面已经判断了不等于，所以这里不会有0)；
+                    now_yue_days = '昨日已续额度，可用：∞'
+                else:
+                    # now_yue_num = budget_amount - spent_value  # 限制消耗金额减去当前总消耗
+                    now_yue_days = math.floor(float(today_credits_num) / yes_run_num)  # 预估还可消耗天数；
             else:
                 # 如果今日昨日一样，代表没消耗的，就可以跳过；
                 yes_run_num = '空'

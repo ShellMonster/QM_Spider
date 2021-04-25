@@ -53,6 +53,11 @@ one_day = datetime.timedelta(days=1)
 headers = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36 Edg/88.0.705.81"
 }
+headers_post = {
+    'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.72 Safari/537.36 Edg/90.0.818.41',
+    'Content-Type': 'application/x-www-form-urlencoded'
+}
+
 
 # 登录检查；
 def qm_auth_check(func):
@@ -72,8 +77,8 @@ def run_time_calc(func):
         begin_time = time.time()
         retc = func(*args, **kwargs)
         end_time = time.time()
-        Run_time = end_time - begin_time
-        print("【%s】函数运行时间为：%s秒" %(func.__name__, str(round(Run_time, 2))))
+        run_time = end_time - begin_time
+        print("【%s】函数运行时间为：%s秒" %(func.__name__, str(round(run_time, 2))))
         return retc
     # 当函数被装饰的时候, 返回装饰器内闭包函数的引用
     return wrapper
@@ -166,11 +171,8 @@ class Sing_Qimai:
         """
         url = 'https://api.qimai.cn/account/signinForm'
         payload = "username=%s&password=%s" %(self.user_id, self.user_pwd)
-        headers = {
-            'Content-Type': "application/x-www-form-urlencoded",
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.87 Safari/537.36"
-        }
-        res = session.post(url, headers=headers, data=payload)
+        res = session.post(url, headers=headers_post, data=payload)
+        return res.json()
 
 # 计算七麦外的其他备用工具；
 class Qimai_Outside_Tool:
@@ -206,7 +208,7 @@ class Qimai_Outside_Tool:
             * 针对列表中的异常值使用平均值补充，方便在不改变字符位置情况下计算最大最小值及位置；
         """
         df_list = pd.DataFrame(self.data_info[0])
-        df_list.fillna(np.mean(df_list[0]), inplace=True)
+        df_list.fillna(df_list[df_list[0].notnull()].mean(), inplace=True)
         return df_list[0].tolist()
 
     def get_week_day(self):
@@ -226,13 +228,13 @@ class Qimai_Outside_Tool:
             return week_day[str(self.data_info[0])]
         elif len(str(self.data_info[0])) == 10:
             day = datetime.datetime.fromisoformat(str(self.data_info[0])).weekday()  # weekday()可以获得是星期几
-            return week_day[day]
+            return week_day[str(day)]
         elif len(str(self.data_info[0])) == 19:
             day = datetime.datetime.strptime(str(self.data_info[0])[:19], '%Y-%m-%d %H:%M:%S').weekday()  # weekday()可以获得是星期几
-            return week_day[day]
+            return week_day[str(day)]
         else:
             day = self.data_info[0].weekday()  # weekday()可以获得是星期几
-            return week_day[day]
+            return week_day[str(day)]
 
     def get_index_list_num(self):
         """
@@ -326,6 +328,24 @@ class Qimai_Outside_Tool:
         start_time = str(day_start)[:8] + str('01')
         end_time = str(day_end)[:8] + str(monthRange_end[1])
         return start_time, end_time
+
+    def df_to_dingdingPush(self):
+        """
+            * 表格数据转换为钉钉markdown格式进行推送；
+        """
+        columns_list = self.data_info[0].columns.values
+        push_text = '**'
+        for columns_value in columns_list:
+            push_text += '%s | ' %(columns_value)
+        push_text = push_text[:-3]  # 去除最后一个|
+        push_text += '**\n\n'
+        for df_info in self.data_info[0].values:
+            push_text += ''
+            for columns_num in range(len(columns_list)):
+                push_text += '%s | ' % (df_info[columns_num])
+            push_text = push_text[:-3]  # 去除最后一个|
+            push_text += '\n\n'
+        return push_text  # 返回；
 
     def calc_interval_time(self):
         """
@@ -755,8 +775,12 @@ class Get_App_Rank():
                 rank_type_name = rank_info['name']
                 if rank_type_name == app_type_list[0] or rank_type_name == app_type_list[1]:
                     rank_num_list = []
+                    # 下方强制用try，某些榜单是None无法计算，及会出现str榜单值的情况；
                     for num, num_info in enumerate(rank_info['data']):
-                        rank_num_list.append(num_info[0])
+                        try:
+                            rank_num_list.append(int(num_info[0]))
+                        except:
+                            rank_num_list.append(None)
 
                     # 列表异常值补充，避免出现位置偏移计算出错；
                     rank_num_list = Qimai_Outside_Tool(rank_num_list).match_fillna_value()
@@ -960,11 +984,7 @@ class Get_Keyword_Info():
         """
         url = 'https://api.qimai.cn/app/searchHints'
         payload='device=%s&word[0]=%s&country=%s&sdate=%s&edate=%s' %(self.device, quote(self.keyword, 'utf-8'), self.country, self.start_date, self.end_date)
-        headers = {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.87 Safari/537.36"
-        }
-        res = session.post(url, data=payload, headers=headers)
+        res = session.post(url, data=payload, headers=headers_post)
         self.keywordHistory_hints = res.json()
         return self.keywordHistory_hints
 
@@ -1624,7 +1644,7 @@ class Get_App_Recommend():
         """
         url = 'https://api.qimai.cn/app/engagement'
         payload='app_id=%s&s_date=%s&e_date=%s' %(self.appid, start_date, end_date)
-        res = session.post(url, data=payload, headers=headers)
+        res = session.post(url, data=payload, headers=headers_post)
         self.app_engagement = res.json()
         return self.app_engagement
 
@@ -1687,7 +1707,7 @@ class Get_App_Status():
         while True:
             url = 'https://api.qimai.cn/app/appStatusList'
             payload='appid=%s&country=%s&status=all&sdate=%s&edate=%s&page=%s&order=%s&sort=%s' %(self.appid, self.country, self.start_date, self.end_date, page_num, self.app_status_order, self.app_status_sort)
-            res = session.post(url, data=payload, headers=headers)
+            res = session.post(url, data=payload, headers=headers_post)
             self.app_status_list.append(res.json())
             page_num += 1
             if page_num > res.json()['maxPage']:
@@ -1701,7 +1721,7 @@ class Get_App_Status():
         """
         url = 'https://api.qimai.cn/app/appStatusList'
         payload='appid=%s&country=%s&status=all&sdate=%s&edate=%s&page=%s&order=%s&sort=%s' %(self.appid, self.country, self.start_date, self.end_date, page_num, self.app_status_order, self.app_status_sort)
-        res = session.post(url, data=payload, headers=headers)
+        res = session.post(url, data=payload, headers=headers_post)
         return res.json()
 
     def get_status_appStatusList(self, app_status_str='all'):
@@ -1714,18 +1734,14 @@ class Get_App_Status():
         while True:
             url = 'https://api.qimai.cn/app/appStatusList'
             payload='appid=%s&country=%s&status=%s&sdate=%s&edate=%s&page=%s&order=%s&sort=%s' %(self.appid, self.country, app_status_str, self.start_date, self.end_date, page_num, self.app_status_order, self.app_status_sort)
-            headers = {
-                'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36',
-                'content-type': 'application/x-www-form-urlencoded; charset=UTF-8'
-            }
-            res = session.post(url, data=payload, headers=headers)
+            res = session.post(url, data=payload, headers=headers_post)
             self.app_status_list.append(res.json())
             page_num += 1
             if page_num > res.json()['maxPage']:
                 break
         return self.app_status_list
 
-    def get_status_appStatusList_onePage(self, page_num=1, app_status_str='all'):
+    def get_status_appStatusList_onePage(self, app_status_str='all', page_num=1):
         """
             * 获取指定状态的所有状态信息：
             :param page_num: 页码数，默认获取第一页；
@@ -1733,25 +1749,21 @@ class Get_App_Status():
         """
         url = 'https://api.qimai.cn/app/appStatusList'
         payload='appid=%s&country=%s&status=%s&sdate=%s&edate=%s&page=%s&order=%s&sort=%s' %(self.appid, self.country, app_status_str, self.start_date, self.end_date, page_num, self.app_status_order, self.app_status_sort)
-        headers = {
-            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36',
-            'content-type': 'application/x-www-form-urlencoded; charset=UTF-8'
-        }
-        res = session.post(url, data=payload, headers=headers)
+        res = session.post(url, data=payload, headers=headers_post)
         return res.json()
 
     def get_new_status_info(self, app_status_str='all'):
         """
             * 获取指定状态最新的状态时间：
         """
-        self.get_status_appStatusList(app_status_str)
-        for status_list in self.app_status_list:
-            if status_list['msg'] == '成功':
-                if len(status_list['data']) > 0:
-                    sdate_time = status_list['data'][0]['sdate']
-                    return sdate_time
-                else:
-                    return ''
+        app_status_resp = self.get_status_appStatusList_onePage(app_status_str)
+        if app_status_resp['msg'] == '成功':
+            if len(app_status_resp['data']) > 0:
+                sdate_time = app_status_resp['data'][0]['sdate']
+                return sdate_time
+            else:
+                return ''
+        else:
             return ''
 
     def get_old_status_info(self, app_status_str='all'):

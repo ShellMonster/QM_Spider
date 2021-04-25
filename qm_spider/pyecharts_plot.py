@@ -1,3 +1,5 @@
+import json
+
 import pandas as pd
 from qm_spider import *
 from pyecharts.faker import Faker
@@ -11,8 +13,29 @@ from collections import Counter
 
 
 # 画图基础通用参数；
-class Pyecharts_Var:
-    def __init__(self, title, x_value, y_name, y_value, *args, subtitle='', is_symbol_show=False, line_width=2, is_show=False, color_list=['#00b088', '#f76b61', '#ffb55d', '#8470ff', '#00a2ff', '#ffe400', '#11d2c2', '#c263f9']):
+# class Pyecharts_Var:
+#     def __init__(self, title, x_value, y_name, y_value, *args, subtitle='', is_symbol_show=False, line_width=2, is_show=False, color_list=['#00b088', '#f76b61', '#ffb55d', '#8470ff', '#00a2ff', '#ffe400', '#11d2c2', '#c263f9']):
+#         self.subtitle = subtitle
+#         self.is_symbol_show = is_symbol_show
+#         self.line_width = line_width
+#         self.is_show = is_show
+#         self.color_list = color_list
+#         self.args = args
+#         self.title = title
+#         self.x_value = [str(i) for i in x_value]
+#         self.y_name = y_name
+#         self.y_value = [float(i) for i in y_value]
+#
+#     def render_to_png(self, c):
+#         make_snapshot(snapshot, c.render(), "./%s.png" %(self.title))
+
+# 折线图、面积图；
+class Line_Py:
+    def __init__(self, title, x_value, y_name, y_value, *args, pos_top='top', is_zoom=False, is_orient='horizontal', legend_icon='roundRect', subtitle='', is_symbol_show=False, line_width=2, is_show=False, color_list=['#00b088', '#f76b61', '#ffb55d', '#8470ff', '#00a2ff', '#ffe400', '#11d2c2', '#c263f9']):
+        self.pos_top = pos_top
+        self.legend_icon = legend_icon
+        self.is_zoom = is_zoom
+        self.is_orient = is_orient
         self.subtitle = subtitle
         self.is_symbol_show = is_symbol_show
         self.line_width = line_width
@@ -27,11 +50,6 @@ class Pyecharts_Var:
     def render_to_png(self, c):
         make_snapshot(snapshot, c.render(), "./%s.png" %(self.title))
 
-# 折线图、面积图；
-class Line_Py(Pyecharts_Var):
-    def __init__(self, title, x_value, y_name, y_value, *args):
-        Pyecharts_Var.__init__(self, title, x_value, y_name, y_value, *args)
-
     def line_render_air(self):
         c = Line()
         c.add_xaxis(self.x_value)
@@ -45,7 +63,13 @@ class Line_Py(Pyecharts_Var):
         c.set_global_opts(
             title_opts=opts.TitleOpts(title=self.title, subtitle=self.subtitle),
             tooltip_opts=opts.TooltipOpts(trigger="axis"),
-            legend_opts=opts.LegendOpts(pos_left="center", pos_top='bottom', legend_icon='circle'),
+            legend_opts=opts.LegendOpts(pos_left="center", pos_top=self.pos_top, legend_icon=self.legend_icon),
+            datazoom_opts=opts.DataZoomOpts(
+                is_show=self.is_zoom,
+                range_start=0,
+                range_end=100,
+                orient=self.is_orient  # 表示横轴可滑动还是纵轴可滑动；
+            ),
             yaxis_opts=opts.AxisOpts(
                 type_="value",
                 max_='dataMax',
@@ -74,7 +98,6 @@ class Line_Py(Pyecharts_Var):
         )
         if len(self.args) > 0:
             for num in range(len(self.args[0])):
-                print(2)
                 c.add_yaxis(
                     series_name = self.args[0][num],
                     y_axis = self.args[1][num],
@@ -87,6 +110,7 @@ class Line_Py(Pyecharts_Var):
 
     def line_render_qimai(self):
         c = Line(init_opts=opts.InitOpts(width="1200px", height="400px"))
+        # c = Line()
         c.add_xaxis(self.x_value)
         c.add_yaxis(
             series_name=self.y_name,
@@ -106,6 +130,7 @@ class Line_Py(Pyecharts_Var):
                 ),
             ),
             tooltip_opts=opts.TooltipOpts(trigger="axis"),
+            # legend_opts=opts.LegendOpts(pos_left="center", pos_top=self.pos_top, legend_icon='circle'),
             legend_opts=opts.LegendOpts(pos_left="center", pos_top='bottom', legend_icon='circle'),
             yaxis_opts=opts.AxisOpts(
                 type_="value",
@@ -211,10 +236,27 @@ class Line_Py(Pyecharts_Var):
         return c
 
 # 柱状图；
-class Bar_Py(Pyecharts_Var):
-    def __init__(self, title, x_value, y_name, y_value, reversal_axis=True):
-        Pyecharts_Var.__init__(self, title, x_value, y_name, y_value)
+class Bar_Py:
+    def __init__(self, title, x_value, y_name, y_value, *args, reversal_axis=True, pos_top='top', is_zoom=False, is_orient='horizontal', legend_icon='roundRect', subtitle='', is_show=False):
         self.reversal_axis = reversal_axis
+        self.pos_top = pos_top
+        self.legend_icon = legend_icon
+        self.is_zoom = is_zoom
+        self.is_orient = is_orient
+        self.subtitle = subtitle
+        self.is_show = is_show
+        self.args = args
+        self.title = title
+        self.x_value = [str(i) for i in x_value]
+        self.y_name = y_name
+        self.y_value = [float(i) for i in y_value]
+        # , is_symbol_show = False, line_width = 2, color_list = ['#00b088', '#f76b61', '#ffb55d', '#8470ff', '#00a2ff', '#ffe400', '#11d2c2', '#c263f9']
+        # self.color_list = color_list
+        # self.is_symbol_show = is_symbol_show
+        # self.line_width = line_width
+
+    def render_to_png(self, c):
+        make_snapshot(snapshot, c.render(), "./%s.png" %(self.title))
 
     def bar_render_general(self):
         c = Bar()
@@ -230,7 +272,7 @@ class Bar_Py(Pyecharts_Var):
         c.set_global_opts(
             title_opts=opts.TitleOpts(title=self.title, subtitle=self.subtitle),
             tooltip_opts=opts.TooltipOpts(trigger="axis"),
-            legend_opts=opts.LegendOpts(pos_left="center", pos_top='bottom', legend_icon='circle'),
+            legend_opts=opts.LegendOpts(pos_left="center", pos_top=self.pos_top, legend_icon=self.legend_icon),
         )
         for agr_data in self.args:
             c.add_yaxis(agr_data[0], agr_data[1])
@@ -247,7 +289,13 @@ class Bar_Py(Pyecharts_Var):
         c.set_global_opts(
             title_opts=opts.TitleOpts(title=self.title, subtitle=self.subtitle),
             tooltip_opts=opts.TooltipOpts(trigger="axis"),
-            legend_opts=opts.LegendOpts(pos_left="center", pos_top='bottom', legend_icon='circle'),
+            legend_opts=opts.LegendOpts(pos_left="center", pos_top=self.pos_top, legend_icon=self.legend_icon),
+            datazoom_opts=opts.DataZoomOpts(
+                is_show=self.is_zoom,
+                range_start=0,
+                range_end=100,
+                orient=self.is_orient  # 表示横轴可滑动还是纵轴可滑动；
+            ),
             yaxis_opts=opts.AxisOpts(
                 type_="value",
                 max_='dataMax',
@@ -274,17 +322,25 @@ class Bar_Py(Pyecharts_Var):
                 ),
             )
         )
-        for agr_data in self.args:
-            c.add_yaxis(agr_data[0], agr_data[1])
+        if len(self.args) > 0:
+            for num in range(len(self.args[0])):
+                c.add_yaxis(
+                    series_name = self.args[0][num],
+                    y_axis = self.args[1][num],
+                    label_opts=opts.LabelOpts(is_show=self.is_show)
+                )
+        # for agr_data in self.args:
+        #     c.add_yaxis(agr_data[0], agr_data[1])
         return c
 
 # 人物/事件关系图；
 class Graph_Py:
-    def __init__(self, title, data_json={}, is_show=False, run_df_data=pd.DataFrame({})):
+    def __init__(self, title, data_json={}, is_show=False, run_df_data=pd.DataFrame({}), pos_top='bottom'):
         self.title = title
         self.is_show = is_show
         self.data_json = data_json
         self.run_df_data = run_df_data
+        self.pos_top = pos_top
 
     def json_format_graph(self, calc_num=100):
         # 格式化字符串；
@@ -329,23 +385,23 @@ class Graph_Py:
         if len(self.data_json) > 0:
             nodes, links, categories = self.data_json
         else:
-            data_json = self.json_format_graph(calc_num=100)
+            data_json = self.json_format_graph(calc_num=calc_num)
             nodes, links, categories = data_json
         # 开始绘图；
         c = (
             Graph()
                 .add(
-                "",
-                nodes,
-                links,
-                categories,
-                repulsion=50,
-                linestyle_opts=opts.LineStyleOpts(curve=0.2),
-                label_opts=opts.LabelOpts(is_show=self.is_show),
-            )
+                    "",
+                    nodes,
+                    links,
+                    categories,
+                    repulsion=50,
+                    linestyle_opts=opts.LineStyleOpts(curve=0.2),
+                    label_opts=opts.LabelOpts(is_show=self.is_show),
+                )
                 .set_global_opts(
-                legend_opts=opts.LegendOpts(is_show=self.is_show),
-                title_opts=opts.TitleOpts(title=self.title),
+                    legend_opts=opts.LegendOpts(is_show=self.is_show, pos_top=self.pos_top),
+                    title_opts=opts.TitleOpts(title=self.title)
             )
         )
         return c
@@ -358,20 +414,20 @@ class TimeLine_Py:
         self.reder_type = render_type
         self.control_position = control_position
 
-    def render_time_air(self, reversal_axis=True):
+    def render_time_air(self, reversal_axis=True, pos_top='top'):
         time_line = Timeline()  # 创建 Timeline对象
 
         # 开始准备画图；
         for run_data in self.data_list:
-            title_text = run_data[0] + '_数据展示'
+            title_text = str(run_data[0]) + '_数据展示'
             run_date = run_data[0]
             x_value = [str(i) for i in run_data[1]]
             y_title = run_data[2]
             y_value = [float(i) for i in run_data[3]]
             if self.reder_type.lower() == 'Bar_Py'.lower():
-                c = Bar_Py(title_text, x_value, y_title, y_value, reversal_axis=reversal_axis).bar_render_general()
+                c = Bar_Py(title_text, x_value, y_title, y_value, reversal_axis=reversal_axis, pos_top=pos_top).bar_render_general()
             else:
-                c = Line_Py(title_text, x_value, y_title, y_value).line_render_air()
+                c = Line_Py(title_text, x_value, y_title, y_value, pos_top=pos_top).line_render_air()
 
             time_line.add(c, run_date)
         # 画好的图加入时间线；
@@ -382,29 +438,34 @@ class TimeLine_Py:
             symbol_size=2,  # 标记大小;
             play_interval=self.play_interval,  # 播放时间间隔；
             control_position=self.control_position,  # 控制位置;
-            linestyle_opts=opts.LineStyleOpts(
-                width=5,
-                type_='dashed',
-                color='rgb(255,0,0,0.5)'
-            ),
-            label_opts=opts.LabelOpts(
-                color='rgb(0,0,255,0.5)',
-                font_size=15,
-                font_style='italic',
-                font_weight='bold',
-                font_family='Time New Roman',
-                position='left',
-                interval=20
-            )
+            # linestyle_opts=opts.LineStyleOpts(
+            #     width=5,
+            #     type_='dashed',
+            #     color='rgb(255,0,0,0.5)'
+            # ),
+            # label_opts=opts.LabelOpts(
+            #     color='rgb(0,0,255,0.5)',
+            #     font_size=15,
+            #     font_style='italic',
+            #     font_weight='bold',
+            #     font_family='Time New Roman',
+            #     position='left',
+            #     interval=20
+            # )
         )
         return time_line
 
 
 # 词云图；
 class WordCloud_Py:
-    def __init__(self, title, *args):
+    def __init__(self, title, *args, is_show=False, pos_top='bottom'):
         self.title = title
+        self.is_show = is_show
+        self.pos_top = pos_top
         self.args = args
+
+    def render_to_png(self, c):
+        make_snapshot(snapshot, c.render(), "./%s.png" %(self.title))
 
     def jieba_cut(self, length_num=0):
         if type(self.args[0]) == list:
@@ -426,5 +487,8 @@ class WordCloud_Py:
         self.jieba_cut(length_num)
         c = WordCloud()
         c.add('', self.word_tuple_result, shape=SymbolType.DIAMOND)
-        c.set_global_opts(title_opts=opts.TitleOpts(title=self.title))
+        c.set_global_opts(
+            title_opts=opts.TitleOpts(title=self.title),
+            legend_opts=opts.LegendOpts(is_show=self.is_show)
+        )
         return c
