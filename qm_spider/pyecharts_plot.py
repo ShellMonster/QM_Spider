@@ -333,6 +333,138 @@ class Bar_Py:
         #     c.add_yaxis(agr_data[0], agr_data[1])
         return c
 
+# 柱状图；
+class Pie_Py:
+    def __init__(self, title, x_value, y_name, y_value, *args, reversal_axis=True, pos_left="right", is_zoom=False, is_orient='horizontal', legend_icon='roundRect', subtitle='', is_show=False):
+        self.reversal_axis = reversal_axis
+        self.pos_left = pos_left
+        self.legend_icon = legend_icon
+        self.is_zoom = is_zoom
+        self.is_orient = is_orient
+        self.subtitle = subtitle
+        self.is_show = is_show
+        self.args = args
+        self.title = title
+        self.x_value = [str(i) for i in x_value]
+        self.y_name = y_name
+        self.y_value = [float(i) for i in y_value]
+        self.inner_data_pair = [list(z) for z in zip(x_value, y_value)]  # 合并参数；
+        self.outer_data_pair = [list(z) for z in zip(self.args[0], self.args[2])]  # 合并参数；
+
+    def pie_render_air(self):
+        """
+            * 实心圆一个，仅支持一份参数；
+        """
+        # c = Pie(init_opts=opts.InitOpts(width="1600px", height="800px"))
+        c = Pie()
+        c.add(
+            series_name=self.y_name,
+            # radius=["40%", "55%"], # 半圆的尺寸；
+            radius=[0, "55%"],
+            data_pair=self.inner_data_pair,
+            label_opts=opts.LabelOpts(
+                position="outside",
+                formatter="{a|{a}}{abg|}\n{hr|}\n {b|{b}: }{c}  {per|{d}%}  ",
+                background_color="#eee",
+                border_color="#aaa",
+                border_width=1,
+                border_radius=4,
+                rich={
+                    "a": {"color": "#999", "lineHeight": 22, "align": "center"},
+                    "abg": {
+                        "backgroundColor": "#e3e3e3",
+                        "width": "100%",
+                        "align": "right",
+                        "height": 22,
+                        "borderRadius": [4, 4, 0, 0],
+                    },
+                    "hr": {
+                        "borderColor": "#aaa",
+                        "width": "100%",
+                        "borderWidth": 0.5,
+                        "height": 0,
+                    },
+                    "b": {"fontSize": 16, "lineHeight": 33},
+                    "per": {
+                        "color": "#eee",
+                        "backgroundColor": "#334455",
+                        "padding": [2, 4],
+                        "borderRadius": 2,
+                    },
+                },
+            ),
+        )
+        c.set_global_opts(
+            title_opts=opts.TitleOpts(title=self.title),
+            legend_opts=opts.LegendOpts(
+                pos_left=self.pos_left,
+                orient="vertical"
+            )
+        )
+        c.set_series_opts(
+            tooltip_opts=opts.TooltipOpts(
+                trigger="item", formatter="{a} <br/>{b}: {c} ({d}%)"
+            )
+        )
+        return c
+
+    def pie_render_pro(self):
+        """
+            * 空心圆包含实心圆的饼图；
+            * 支持两份百分比值数据，使用*args传参三个，分别为x数据列、y轴名、y数据列；
+        """
+        # c = Pie(init_opts=opts.InitOpts(width="1600px", height="800px"))
+        c = Pie()
+        c.add(
+            series_name=self.y_name,
+            data_pair=self.inner_data_pair,
+            radius=[0, "30%"],
+            label_opts=opts.LabelOpts(position="inner"),
+        )
+        c.add(
+            series_name=self.args[1],
+            radius=["40%", "55%"],
+            data_pair=self.outer_data_pair,
+            label_opts=opts.LabelOpts(
+                position="outside",
+                formatter="{a|{a}}{abg|}\n{hr|}\n {b|{b}: }{c}  {per|{d}%}  ",
+                background_color="#eee",
+                border_color="#aaa",
+                border_width=1,
+                border_radius=4,
+                rich={
+                    "a": {"color": "#999", "lineHeight": 22, "align": "center"},
+                    "abg": {
+                        "backgroundColor": "#e3e3e3",
+                        "width": "100%",
+                        "align": "right",
+                        "height": 22,
+                        "borderRadius": [4, 4, 0, 0],
+                    },
+                    "hr": {
+                        "borderColor": "#aaa",
+                        "width": "100%",
+                        "borderWidth": 0.5,
+                        "height": 0,
+                    },
+                    "b": {"fontSize": 16, "lineHeight": 33},
+                    "per": {
+                        "color": "#eee",
+                        "backgroundColor": "#334455",
+                        "padding": [2, 4],
+                        "borderRadius": 2,
+                    },
+                },
+            ),
+        )
+        c.set_global_opts(legend_opts=opts.LegendOpts(pos_left="left", orient="vertical"))
+        c.set_series_opts(
+            tooltip_opts=opts.TooltipOpts(
+                trigger="item", formatter="{a} <br/>{b}: {c} ({d}%)"
+            )
+        )
+        return c
+
 # 人物/事件关系图；
 class Graph_Py:
     def __init__(self, title, data_json={}, is_show=False, run_df_data=pd.DataFrame({}), pos_top='bottom'):

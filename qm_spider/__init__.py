@@ -193,6 +193,16 @@ class Qimai_Outside_Tool:
                 return True
         return False
 
+    def match_chinese_text(self):
+        """
+            * 查找字符串中包含的中文；
+            * 返回查找到的中文；
+        """
+        # 由于字符中的是HTML格式，所以先过滤掉非中文的再进行处理；
+        pattern = re.compile(r'[^\u4e00-\u9fa5]')
+        chinese_text = re.sub(pattern, "", self.data_info[0]).replace(' ', '')
+        return chinese_text
+
     def match_publisher_company(self):
         """
             * 匹配开发者是否为公司账号(自带匹配库)；
@@ -350,7 +360,7 @@ class Qimai_Outside_Tool:
     def calc_interval_time(self):
         """
             * 计算间隔时间；
-            返回间隔的小时分钟秒；
+            * 返回间隔的小时分钟秒；
         """
         spider_time_datetime = datetime.datetime.strptime(str(self.data_info[0]), '%Y-%m-%d %H:%M:%S')
         rank_out_datetime = datetime.datetime.strptime(str(self.data_info[1]), '%Y-%m-%d %H:%M:%S')
@@ -596,7 +606,7 @@ class Qimai_Intside_Tool:
 #=============核心运行类区=============#
 # 获取基础信息相关数据；
 @qm_auth_check  # 登录检查；
-class Get_App_Appinfo():
+class Get_App_Appinfo:
     def __init__(self, appid, country='cn'):
         self.appid = appid
         self.country = country
@@ -620,7 +630,8 @@ class Get_App_Appinfo():
 
     def get_publisher_name(self):
         """
-            * 获取App归属的开发商名称(中文)
+            * 获取App归属的开发商名称(中文)；
+            * publisher；
         """
         self.get_appinfo()
         self.publisher_name = self.appinfo['appInfo']['publisher']
@@ -628,13 +639,17 @@ class Get_App_Appinfo():
 
     def get_developer_name(self):
         """
-            * 获取App归属的开发商名称(英文)
+            * 获取App归属的开发者名称(英文)；
+            * publisher_seller；
         """
         self.get_appinfo()
         self.developer_name = self.appinfo['appInfo']['publisher_seller']
         return self.developer_name
 
     def get_purchases_num(self):
+        """
+            * 获取App的内购数数量；
+        """
         self.get_appinfo()
         self.purchases_num = self.appinfo['appInfo']['purchases_num']
         return self.purchases_num
@@ -704,7 +719,7 @@ class Get_App_Appinfo():
 
 # 获取榜单相关数据；
 @qm_auth_check  # 登录检查；
-class Get_App_Rank():
+class Get_App_Rank:
     """
         * 根据AppID及对应时间，获取产品榜单数值；
         * 可获取子分类榜单；
@@ -845,7 +860,7 @@ class Get_App_Rank():
 
 # 获取开发商相关数据；
 @qm_auth_check  # 登录检查；
-class Get_App_SamePubApp():
+class Get_App_SamePubApp:
     """
         * 获取开发商相关数据；
         * 举例①：获取开发商名称；
@@ -895,7 +910,7 @@ class Get_App_SamePubApp():
 
 # 获取关键词的相关数据；
 @qm_auth_check  # 登录检查；
-class Get_Keyword_Info():
+class Get_Keyword_Info:
     """
         * 获取关键词下相关数据；
         * 举例①：获取关键词下产品信息；
@@ -1127,7 +1142,7 @@ class Get_Keyword_Info():
 
 # 获取产品的关键词相关数据；
 @qm_auth_check  # 登录检查；
-class Get_App_Keyword():
+class Get_App_Keyword:
     """
         * 获取App的关键词相关信息；
         * 举例①：获取App的对应时间覆盖数据(默认当日)；
@@ -1303,7 +1318,7 @@ class Get_App_Keyword():
 
 # 获取产品评论的相关接口；
 @qm_auth_check  # 登录检查；
-class Get_App_Comment():
+class Get_App_Comment:
     """
         * 获取App的评论相关数据；
         * 举例①：获取App每天的新增评论数；
@@ -1410,7 +1425,7 @@ class Get_App_Comment():
 
 # 获取清榜列表相关数据；
 @qm_auth_check  # 登录检查；
-class Get_Clear_Rank_List():
+class Get_Clear_Rank_List:
     """
         * 获取清榜列表相关数据；
         * 举例①：获取当前清榜列表所有清榜产品相关数据；
@@ -1454,7 +1469,7 @@ class Get_Clear_Rank_List():
 
 # 获取清词列表相关数据；
 @qm_auth_check  # 登录检查；
-class Get_Clear_Keyword_List():
+class Get_Clear_Keyword_List:
     """
         * 获取清词列表相关数据(清词的产品多所以按日展示的)；
         * 举例①：获取当前清词列表所有清词产品相关数据；
@@ -1502,13 +1517,13 @@ class Get_Clear_Keyword_List():
 
 # 获取上架、下架产品列表相关数据；
 @qm_auth_check  # 登录检查；
-class Get_App_ON_Offline_List():
+class Get_App_ON_Offline_List:
     """
         * 获取上架、下架列表相关数据(上下架的产品多所以按日展示的)；
         * 举例①：获取当前下架列表所有下架产品相关数据；
         option: 上架、下架监控排序，默认按近期最高排名
     """
-    def __init__(self, start_date=today_date, end_date=today_date, genre_type=36, country='cn', option=4, search_word=''):
+    def __init__(self, start_date=today_date-one_day, end_date=today_date, genre_type=36, country='cn', option=4, search_word=''):
         self.start_date = start_date
         self.end_date = end_date
         self.search_word = search_word
@@ -1572,7 +1587,7 @@ class Get_App_ON_Offline_List():
 
 # 获取预订App列表；
 @qm_auth_check  # 登录检查；
-class Get_PreOrder_AppList():
+class Get_PreOrder_AppList:
     """
         * 获取预订App列表相关数据；
         * 举例①：获取当前预订列表所有预订产品相关数据；
@@ -1616,7 +1631,7 @@ class Get_PreOrder_AppList():
 
 # 获取产品被精品推荐及上热搜情况列表；
 @qm_auth_check  # 登录检查；
-class Get_App_Recommend():
+class Get_App_Recommend:
     """
         * 获取产品精品推荐及热搜列表相关数据；
         * 举例①：获取当前被精品推荐所有数据；
@@ -1681,7 +1696,7 @@ class Get_App_Recommend():
 
 # 获取App不同状态列表；
 @qm_auth_check  # 登录检查；
-class Get_App_Status():
+class Get_App_Status:
     """
         * 获取App状态列表相关数据；
         * 举例①：获取当前App所有清榜情况；
@@ -1782,7 +1797,7 @@ class Get_App_Status():
 
 # 封装指数排行榜接口；
 @qm_auth_check  # 登录检查；
-class Get_Keyword_HintsRank():
+class Get_Keyword_HintsRank:
     """
         * 获取指数排行榜列表相关数据；
         * 举例①：获取iPad指数排行榜数据；
@@ -1834,7 +1849,7 @@ class Get_Keyword_HintsRank():
 
 # 封装关键词落词、新进、上升、下降列表接口；
 @qm_auth_check  # 登录检查；
-class Get_Keyword_LoseNewDownUp_List():
+class Get_Keyword_LoseNewDownUp_List:
     """
         * 获取关键词下落榜、新进、上升、下降产品列表相关数据；
         * 举例①：获取当前词落榜产品基本信息，落榜前排名等相关数据；
@@ -2008,7 +2023,7 @@ class Get_Keyword_LoseNewDownUp_List():
 
 # 获取免费、付费、畅销榜单产品列表；
 @qm_auth_check  # 登录检查；
-class Get_FreePaidGross_RankList():
+class Get_FreePaidGross_RankList:
     """
         * 获取免费、付费、畅销榜产品列表；
         * 举例①：获取游戏畅销榜前100产品信息；
@@ -2110,7 +2125,7 @@ class Get_FreePaidGross_RankList():
 
 # 获取预估下载量及预估收入接口；
 @qm_auth_check  # 登录检查；
-class Get_AppDownRevenue_Data():
+class Get_AppDownRevenue_Data:
     """
         * 获取产品预估下载量及预估收入数据；
         * 举例①：获取产品在某时间段内每日预估下载量数据；
@@ -2142,7 +2157,7 @@ class Get_AppDownRevenue_Data():
 
 # 获取iOS 14/iOS 13、iOS 12热搜；
 @qm_auth_check  # 登录检查；
-class Get_HotSearch_Data():
+class Get_HotSearch_Data:
     """
         * 获取热搜相关数据；
         * 举例①：获取近期上榜的关键词数量指数区间分析；
@@ -2194,7 +2209,7 @@ class Get_HotSearch_Data():
 
 # 榜单上升下降最快数据；
 @qm_auth_check  # 登录检查；
-class Get_Rank_UpDown_List():
+class Get_Rank_UpDown_List:
     """
         * 获取榜单上升下降较快的产品；
         * 举例①：获取今日下降较快产品；
@@ -2265,7 +2280,7 @@ class Get_Rank_UpDown_List():
 
 # 获取各类覆盖排行榜；
 @qm_auth_check  # 登录检查；
-class Get_Cover_Rank():
+class Get_Cover_Rank:
     """
         * 获取各类覆盖排行榜；
         * 举例①：获取Top3总数量覆盖排行榜；
