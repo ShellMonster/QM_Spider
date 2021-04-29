@@ -339,6 +339,79 @@ class Qimai_Outside_Tool:
         end_time = str(day_end)[:8] + str(monthRange_end[1])
         return start_time, end_time
 
+    def df_to_html(self, sort_value='', ascending=False, return_type="css_html", css_url='https://gitee.com/ShellM/My_File/raw/master/center_table.css'):
+        """
+            * df转html并添加css样式；
+            * 可返回带css样式的html，也可返回不带的(默认带)，对应参数分别为：css_html、table_html；
+        """
+        df = self.data_info[0]
+        if sort_value != '':
+            df.sort_values(sort_value, ascending=ascending, inplace=True)
+        df_html = df.to_html(index=False, classes='mystyle')
+        if return_type == 'table_html':
+            return df_html
+        else:
+            # 生成排版过后的html；
+            html_string = '''<html>
+                  <head>
+                    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+                    <title>HTML Pandas Dataframe with CSS</title>
+                    <style >
+                        {style}
+                      <!-- 内部样式表结束 -->
+                    </style>
+                  </head>
+    
+                  <body>
+                    {table}
+                  </body>
+                </html>
+                '''
+            # 把HTML写入；
+            style_text = requests.get(css_url).text
+            mail_html = html_string.format(style=style_text, table=df_html)
+            return mail_html
+
+    def df_more_to_html(self, sort_value='', ascending=False, file_save=False, return_type="css_html", css_url='https://gitee.com/ShellM/My_File/raw/master/center_table.css'):
+        """
+            * df转html并添加css样式, 发送的需要为多参数且list；举例：\*[['表名①', df①], ['表名', df②]]，注意多参数传递需要前面的\*，或：['表名①', df①], ['表名', df②]进行传递；
+        ----------
+        :param sort_value: 备用参数，所有表需要排序的参数都一致时可用于排序；
+        :param ascending: 备用参数，所有表需要排序的参数都一致时可用于排序；
+        :param file_save: 是否保存文件到本地，默认当前目录下；
+        :param return_type: 备用参数，用于确认是否需要css样式表格，默认即可；
+        :param css_url: css样式参数，默认即可；
+        """
+        vaild_excel_content = ''
+        vaild_excel_list = []
+        for run_title, run_df in self.data_info:
+            if run_df.shape[0] > 0:
+                df_html_content = Qimai_Outside_Tool(run_df).df_to_html(sort_value=sort_value, ascending=ascending, return_type=return_type, css_url=css_url)
+                vaild_excel_content += '\n<h2>%s</h2> %s\n' % (run_title, df_html_content)
+                vaild_excel_list.append('./%s_%s.xlsx' %(today_date, run_title)) # 表名加入便于生成文件名；
+                if file_save == True:
+                    run_df.to_excel('./%s_%s.xlsx' %(today_date, run_title), index=False)
+        # 开始组合排版；；
+        html_string = '''<html>
+              <head>
+                <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+                <title>HTML Pandas Dataframe with CSS</title>
+                <style >
+                    {style}
+                  <!-- 内部样式表结束 -->
+                </style>
+              </head>
+    
+              <body>
+                {table}
+              </body>
+            </html>
+            '''
+        # 把HTML写入；
+        style_text = requests.get(css_url).text
+        mail_html = html_string.format(style=style_text, table=vaild_excel_content)
+        return mail_html, vaild_excel_list
+
     def df_to_dingdingPush(self):
         """
             * 表格数据转换为钉钉markdown格式进行推送；
@@ -1295,7 +1368,10 @@ class Get_App_Keyword:
         """
         self.get_keywordDetail()
         self.json_df = json_normalize(self.app_keywordDetail['data'])
-        self.json_df.columns = ['关键词ID', '关键词', '排名', '变动前排名', '排名变动值', '指数', '结果数', '未知1', '未知2']
+        if self.version == 'ios14':
+            self.json_df.columns = ['关键词ID', '关键词', '排名', '变动前排名', '排名变动值', '指数', '结果数', '未知1', '未知2', '未知3', '未知4', '未知5', '未知6', '未知7', '未知8', '未知9']
+        else:
+            self.json_df.columns = ['关键词ID', '关键词', '排名', '变动前排名', '排名变动值', '指数', '结果数', '未知1', '未知2']
         return self.json_df
 
     def get_app_cover_regular(self, qualified_keyword_num=3000):

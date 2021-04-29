@@ -31,7 +31,11 @@ from collections import Counter
 
 # 折线图、面积图；
 class Line_Py:
-    def __init__(self, title, x_value, y_name, y_value, *args, pos_top='top', is_zoom=False, is_orient='horizontal', legend_icon='roundRect', subtitle='', is_symbol_show=False, line_width=2, is_show=False, color_list=['#00b088', '#f76b61', '#ffb55d', '#8470ff', '#00a2ff', '#ffe400', '#11d2c2', '#c263f9']):
+    def __init__(self, title, x_value, y_name, y_value, *args, pos_top='top', is_zoom=False, boundary_gap=False, is_orient='horizontal', y_is_inverse=False, x_is_inverse=False, legend_icon='roundRect', subtitle='', is_symbol_show=False, line_width=2, is_show=False, color_list=['#00b088', '#f76b61', '#ffb55d', '#8470ff', '#00a2ff', '#ffe400', '#11d2c2', '#c263f9']):
+        """
+            * 若是有args传参，参数示例：*[['1', '2', '3'], [[136,176, 177], [209, 163, 223], [244, 235, 321]]；
+            * 第一个列表是Y轴的数据名称列表，第二个列表是每个Y轴对应的数据；
+        """
         self.pos_top = pos_top
         self.legend_icon = legend_icon
         self.is_zoom = is_zoom
@@ -46,6 +50,19 @@ class Line_Py:
         self.x_value = [str(i) for i in x_value]
         self.y_name = y_name
         self.y_value = [float(i) for i in y_value]
+        self.y_is_inverse = y_is_inverse
+        self.x_is_inverse = x_is_inverse
+        self.boundary_gap = boundary_gap
+        if self.y_is_inverse == True:
+            self.y_min = 1
+            self.y_max = None
+        else:
+            self.y_min = None
+            self.y_max = 'dataMax'
+        if self.x_is_inverse == True:
+            self.x_min = 1
+        else:
+            self.x_min = None
 
     def render_to_png(self, c):
         make_snapshot(snapshot, c.render(), "./%s.png" %(self.title))
@@ -72,8 +89,9 @@ class Line_Py:
             ),
             yaxis_opts=opts.AxisOpts(
                 type_="value",
-                max_='dataMax',
-                boundary_gap=True,  # 封闭坐标轴，左右都有顶上的刻度线；
+                max_=self.y_max,
+                min_=self.y_min,
+                boundary_gap=self.boundary_gap,  # 封闭坐标轴，左右都有顶上的刻度线；
                 axislabel_opts=opts.LabelOpts(color="#7D7D7D"),
                 axisline_opts=opts.AxisLineOpts(
                     linestyle_opts=opts.LineStyleOpts(width=1.5, color="#A0A7B3")
@@ -85,7 +103,8 @@ class Line_Py:
             ),
             xaxis_opts=opts.AxisOpts(
                 type_="category",
-                boundary_gap=True,
+                min_=self.x_min,
+                boundary_gap=self.boundary_gap,
                 axislabel_opts=opts.LabelOpts(color="#7D7D7D"),
                 axisline_opts=opts.AxisLineOpts(
                     linestyle_opts=opts.LineStyleOpts(width=1.5, color="#A0A7B3")
@@ -134,8 +153,10 @@ class Line_Py:
             legend_opts=opts.LegendOpts(pos_left="center", pos_top='bottom', legend_icon='circle'),
             yaxis_opts=opts.AxisOpts(
                 type_="value",
-                max_='dataMax',
-                boundary_gap=True,  # 封闭坐标轴，左右都有顶上的刻度线；
+                max_=self.y_max,
+                min_=self.y_min,
+                is_inverse=self.y_is_inverse,  # 反向Y轴；
+                boundary_gap=self.boundary_gap,  # 封闭坐标轴，左右都有顶上的刻度线；
                 axislabel_opts=opts.LabelOpts(color="#7D7D7D"),
                 axisline_opts=opts.AxisLineOpts(
                     linestyle_opts=opts.LineStyleOpts(width=1.5, color="#A0A7B3")
@@ -147,7 +168,9 @@ class Line_Py:
             ),
             xaxis_opts=opts.AxisOpts(
                 type_="category",
-                boundary_gap=True,
+                min_=self.x_min,
+                boundary_gap=self.boundary_gap,
+                is_inverse=self.x_is_inverse,  # 反向X轴；
                 axislabel_opts=opts.LabelOpts(color="#7D7D7D"),
                 axisline_opts=opts.AxisLineOpts(
                     linestyle_opts=opts.LineStyleOpts(width=1.5, color="#A0A7B3")
@@ -237,7 +260,7 @@ class Line_Py:
 
 # 柱状图；
 class Bar_Py:
-    def __init__(self, title, x_value, y_name, y_value, *args, reversal_axis=True, pos_top='top', is_zoom=False, is_orient='horizontal', legend_icon='roundRect', subtitle='', is_show=False):
+    def __init__(self, title, x_value, y_name, y_value, *args, reversal_axis=True, pos_top='top', is_zoom=False, boundary_gap=False, is_orient='horizontal', legend_icon='roundRect', subtitle='', is_show=False):
         self.reversal_axis = reversal_axis
         self.pos_top = pos_top
         self.legend_icon = legend_icon
@@ -250,6 +273,7 @@ class Bar_Py:
         self.x_value = [str(i) for i in x_value]
         self.y_name = y_name
         self.y_value = [float(i) for i in y_value]
+        self.boundary_gap = boundary_gap
         # , is_symbol_show = False, line_width = 2, color_list = ['#00b088', '#f76b61', '#ffb55d', '#8470ff', '#00a2ff', '#ffe400', '#11d2c2', '#c263f9']
         # self.color_list = color_list
         # self.is_symbol_show = is_symbol_show
@@ -299,7 +323,7 @@ class Bar_Py:
             yaxis_opts=opts.AxisOpts(
                 type_="value",
                 max_='dataMax',
-                boundary_gap=True,  # 封闭坐标轴，左右都有顶上的刻度线；
+                boundary_gap=self.boundary_gap,  # 封闭坐标轴，左右都有顶上的刻度线；
                 axislabel_opts=opts.LabelOpts(color="#7D7D7D"),
                 axisline_opts=opts.AxisLineOpts(
                     linestyle_opts=opts.LineStyleOpts(width=1.5, color="#A0A7B3")
@@ -311,7 +335,7 @@ class Bar_Py:
             ),
             xaxis_opts=opts.AxisOpts(
                 type_="category",
-                boundary_gap=True,
+                boundary_gap=self.boundary_gap,
                 axislabel_opts=opts.LabelOpts(color="#7D7D7D"),
                 axisline_opts=opts.AxisLineOpts(
                     linestyle_opts=opts.LineStyleOpts(width=1.5, color="#A0A7B3")
@@ -349,7 +373,8 @@ class Pie_Py:
         self.y_name = y_name
         self.y_value = [float(i) for i in y_value]
         self.inner_data_pair = [list(z) for z in zip(x_value, y_value)]  # 合并参数；
-        self.outer_data_pair = [list(z) for z in zip(self.args[0], self.args[2])]  # 合并参数；
+        if len(self.args) > 0:
+            self.outer_data_pair = [list(z) for z in zip(self.args[0], self.args[2])]  # 合并参数；
 
     def pie_render_air(self):
         """
