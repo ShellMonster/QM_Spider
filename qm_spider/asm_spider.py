@@ -139,7 +139,7 @@ class Get_ASM_Consume:
             try:
                 df = pd.read_excel('%s' %(self.yes_file_path))
             except:
-                DingDing_Push('ASM异常推送告警', '### ASM余额监控-异常告警提示\n\n**提示内容：**当前读取前1日存储账单记录异常，已再向前1日读取存储，数据或出现偏移，请注意确认！', push_url=self.push_url).app_args_markdown_push()
+                DingDing_Push('ASM异常推送告警', '### ASM余额监控-异常告警提示\n\n**提示内容**：当前读取前1日存储账单记录异常，已再向前1日读取存储，数据或出现偏移，请注意确认！', push_url=self.push_url).app_args_markdown_push()
                 df = pd.read_excel('%s' % (self.yes_yes_file_path))
 
             # 正式开始执行；
@@ -284,6 +284,7 @@ class Get_ASM_Consume:
             )
 
             # 开始推送；
+            print('文件已存储完毕，开始推送')
             for push_info in push_text_list:
                 DingDing_Push(push_info[0], *[push_info[1]], push_url=self.push_url).app_args_markdown_push()
                 time.sleep(5)

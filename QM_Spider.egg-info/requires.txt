@@ -10,3 +10,4 @@ python-dateutil
 beautifulsoup4
 python-pptx
 jieba
+openpyxl

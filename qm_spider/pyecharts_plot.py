@@ -1,10 +1,7 @@
-import json
-
-import pandas as pd
 from qm_spider import *
 from pyecharts.faker import Faker
 from pyecharts import options as opts
-from pyecharts.charts import Bar, Grid, Line, Page, Pie, Timeline, Boxplot, WordCloud, Graph
+from pyecharts.charts import Bar, Grid, Line, Page, Pie, Timeline, Boxplot, WordCloud, Graph, Scatter
 from pyecharts.commons.utils import JsCode
 from pyecharts.globals import ThemeType, SymbolType
 from pyecharts.render import make_snapshot
@@ -298,8 +295,13 @@ class Bar_Py:
             tooltip_opts=opts.TooltipOpts(trigger="axis"),
             legend_opts=opts.LegendOpts(pos_left="center", pos_top=self.pos_top, legend_icon=self.legend_icon),
         )
-        for agr_data in self.args:
-            c.add_yaxis(agr_data[0], agr_data[1])
+        if len(self.args) > 0:
+            for num in range(len(self.args[0])):
+                c.add_yaxis(
+                    series_name = self.args[0][num],
+                    y_axis = self.args[1][num],
+                    label_opts=opts.LabelOpts(is_show=self.is_show)
+                )
         return c
 
     def bar_render_air(self):
@@ -359,12 +361,10 @@ class Bar_Py:
 
 # 柱状图；
 class Pie_Py:
-    def __init__(self, title, x_value, y_name, y_value, *args, reversal_axis=True, pos_left="right", is_zoom=False, is_orient='horizontal', legend_icon='roundRect', subtitle='', is_show=False):
+    def __init__(self, title, x_value, y_name, y_value, *args, reversal_axis=True, pos_left="right", legend_icon='roundRect', subtitle='', is_show=False):
         self.reversal_axis = reversal_axis
         self.pos_left = pos_left
         self.legend_icon = legend_icon
-        self.is_zoom = is_zoom
-        self.is_orient = is_orient
         self.subtitle = subtitle
         self.is_show = is_show
         self.args = args
@@ -372,9 +372,35 @@ class Pie_Py:
         self.x_value = [str(i) for i in x_value]
         self.y_name = y_name
         self.y_value = [float(i) for i in y_value]
-        self.inner_data_pair = [list(z) for z in zip(x_value, y_value)]  # 合并参数；
-        if len(self.args) > 0:
-            self.outer_data_pair = [list(z) for z in zip(self.args[0], self.args[2])]  # 合并参数；
+        self.inner_data_pair = [list(z) for z in zip(self.x_value, self.y_value)]  # 合并参数；
+        if len(self.args) > 0: # 先判断是否需要画多图，再判断是2个还是3个；
+            if len(self.args[0]) > 1:
+                self.outer_data_pair = [list(z) for z in zip(self.args[0][0], self.args[2][0])]  # 合并参数；
+                self.max_data_pair = [list(z) for z in zip(self.args[0][1], self.args[2][1])]  # 合并参数；
+            else:
+                self.outer_data_pair = [list(z) for z in zip(self.args[0][0], self.args[2][0])]  # 合并参数；
+
+    def pie_render_genre(self):
+        c = Pie()
+        c.add(
+            self.y_name,
+            self.inner_data_pair,
+            center=["35%", "50%"]
+        )
+        c.set_global_opts(
+            title_opts=opts.TitleOpts(title=self.title),
+            legend_opts=opts.LegendOpts(
+                pos_left=self.pos_left,
+                orient="vertical"
+            )
+        )
+        c.set_series_opts(
+            tooltip_opts=opts.TooltipOpts(
+                trigger="item", formatter="{a} <br/>{b}: {c} ({d}%)"
+            ),
+            label_opts=opts.LabelOpts(formatter="{b}: {d}%")
+        )
+        return c
 
     def pie_render_air(self):
         """
@@ -447,7 +473,7 @@ class Pie_Py:
             label_opts=opts.LabelOpts(position="inner"),
         )
         c.add(
-            series_name=self.args[1],
+            series_name=self.args[1][0],
             radius=["40%", "55%"],
             data_pair=self.outer_data_pair,
             label_opts=opts.LabelOpts(
@@ -486,6 +512,147 @@ class Pie_Py:
         c.set_series_opts(
             tooltip_opts=opts.TooltipOpts(
                 trigger="item", formatter="{a} <br/>{b}: {c} ({d}%)"
+            )
+        )
+        return c
+
+    def pie_render_plus(self):
+        """
+            * 空心圆包含实心圆的饼图(总计3个饼图一起)；
+            * 支持两份百分比值数据，使用*args传参三个，分别为x数据列、y轴名、y数据列；
+        """
+        c = Pie()
+        c.add(
+            series_name=self.y_name,
+            data_pair=self.inner_data_pair,
+            radius=[0, "30%"],
+            label_opts=opts.LabelOpts(position="inner"),
+        )
+        c.add(
+            series_name=self.args[1][0],
+            radius=["40%", "55%"],
+            data_pair=self.outer_data_pair,
+            label_opts=opts.LabelOpts(
+                position="outside",
+                formatter="{a|{a}}{abg|}\n{hr|}\n {b|{b}: }{c}  {per|{d}%}  ",
+                background_color="#eee",
+                border_color="#aaa",
+                border_width=1,
+                border_radius=4,
+                rich={
+                    "a": {"color": "#999", "lineHeight": 22, "align": "center"},
+                    "abg": {
+                        "backgroundColor": "#e3e3e3",
+                        "width": "100%",
+                        "align": "right",
+                        "height": 22,
+                        "borderRadius": [4, 4, 0, 0],
+                    },
+                    "hr": {
+                        "borderColor": "#aaa",
+                        "width": "100%",
+                        "borderWidth": 0.5,
+                        "height": 0,
+                    },
+                    "b": {"fontSize": 16, "lineHeight": 33},
+                    "per": {
+                        "color": "#eee",
+                        "backgroundColor": "#334455",
+                        "padding": [2, 4],
+                        "borderRadius": 2,
+                    },
+                },
+            ),
+        )
+        c.add(
+            series_name=self.args[1][1],
+            radius=["65%", "80%"],
+            data_pair=self.max_data_pair,
+            label_opts=opts.LabelOpts(
+                position="outside",
+                formatter="{a|{a}}{abg|}\n{hr|}\n {b|{b}: }{c}  {per|{d}%}  ",
+                background_color="#eee",
+                border_color="#aaa",
+                border_width=1,
+                border_radius=4,
+                rich={
+                    "a": {"color": "#999", "lineHeight": 22, "align": "center"},
+                    "abg": {
+                        "backgroundColor": "#e3e3e3",
+                        "width": "100%",
+                        "align": "right",
+                        "height": 22,
+                        "borderRadius": [4, 4, 0, 0],
+                    },
+                    "hr": {
+                        "borderColor": "#aaa",
+                        "width": "100%",
+                        "borderWidth": 0.5,
+                        "height": 0,
+                    },
+                    "b": {"fontSize": 16, "lineHeight": 33},
+                    "per": {
+                        "color": "#eee",
+                        "backgroundColor": "#334455",
+                        "padding": [2, 4],
+                        "borderRadius": 2,
+                    },
+                },
+            ),
+        )
+        c.set_global_opts(legend_opts=opts.LegendOpts(pos_left="left", orient="vertical"))
+        c.set_series_opts(
+            tooltip_opts=opts.TooltipOpts(
+                trigger="item", formatter="{a} <br/>{b}: {c} ({d}%)"
+            )
+        )
+        return c
+
+class Scatter_Py:
+    def __init__(self, title, x_value, y_name, y_value, *args, pos_left="center", legend_icon='roundRect', subtitle='', is_show=False):
+        self.is_show = is_show
+        self.pos_left = pos_left
+        self.legend_icon = legend_icon
+        self.subtitle = subtitle
+        self.args = args
+        self.title = title
+        self.x_value = [str(i) for i in x_value]
+        self.y_name = y_name
+        self.y_value = [float(i) for i in y_value]
+        self.inner_data_pair = [list(z) for z in zip(self.y_value, self.x_value)]  # 合并参数；
+        if len(self.args) > 0:  # 先判断是否需要画多图，再判断是2个还是3个；
+            if len(self.args[0]) > 1:
+                self.outer_data_pair = [list(z) for z in zip(self.args[0][0], self.args[2][0])]  # 合并参数；
+                self.max_data_pair = [list(z) for z in zip(self.args[0][1], self.args[2][1])]  # 合并参数；
+            else:
+                self.outer_data_pair = [list(z) for z in zip(self.args[0][0], self.args[2][0])]  # 合并参数；
+
+    def scatter_render_air(self):
+        c = Scatter()
+        c.add_xaxis(self.x_value)
+        c.add_yaxis(
+            series_name=self.y_name,
+            y_axis=self.inner_data_pair,
+            label_opts=opts.LabelOpts(
+                is_show=self.is_show,
+                formatter=JsCode(
+                    "function(params){return params.value[2] +' : '+ params.value[1];}"
+                )
+            )
+        )
+        c.set_global_opts(
+            title_opts=opts.TitleOpts(title=self.title, subtitle=self.subtitle),
+            # tooltip_opts=opts.TooltipOpts(
+            #     formatter=JsCode(
+            #         "function (params) {return params.name + ' : ' + params.value[2];}"
+            #     )
+            # ),
+            visualmap_opts=opts.VisualMapOpts(
+                type_="color", max_=150, min_=20, dimension=1
+            ),
+            legend_opts=opts.LegendOpts(
+                pos_left=self.pos_left,
+                legend_icon=self.legend_icon
             )
         )
         return c

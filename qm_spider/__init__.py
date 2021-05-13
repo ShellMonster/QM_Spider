@@ -1,4 +1,4 @@
-import requests, datetime, time, warnings, json, calendar, math, os, re, jieba, jieba.analyse, random, string
+import requests, datetime, time, warnings, json, calendar, math, os, sys, re, jieba, jieba.analyse, random, string, traceback
 from datetime import date
 from dateutil.relativedelta import relativedelta
 from pandas.io.json import json_normalize
@@ -81,6 +81,22 @@ def run_time_calc(func):
         print("【%s】函数运行时间为：%s秒" %(func.__name__, str(round(run_time, 2))))
         return retc
     # 当函数被装饰的时候, 返回装饰器内闭包函数的引用
+    return wrapper
+
+# 运行异常的错误排查及推送；
+def run_check_status(push_url=''):
+    def wrapper(func):
+        def run_check(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except:
+                push_text = traceback.format_exc()
+                print(push_text)
+                if push_url != '':
+                    push_title = '%s：%s' %(os.path.basename(sys.argv[0]), '运行错误')
+                    DingDing_Push(push_title, push_status=push_text, push_url=push_url).status_push()
+        # 当函数被装饰的时候, 返回装饰器内闭包函数的引用
+        return run_check
     return wrapper
 
 # # 运行进度条；
@@ -391,26 +407,29 @@ class Qimai_Outside_Tool:
                 vaild_excel_list.append('./%s_%s.xlsx' %(today_date, run_title)) # 表名加入便于生成文件名；
                 if file_save == True:
                     run_df.to_excel('./%s_%s.xlsx' %(today_date, run_title), index=False)
-        # 开始组合排版；；
-        html_string = '''<html>
-              <head>
-                <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-                <title>HTML Pandas Dataframe with CSS</title>
-                <style >
-                    {style}
-                  <!-- 内部样式表结束 -->
-                </style>
-              </head>
-    
-              <body>
-                {table}
-              </body>
-            </html>
-            '''
-        # 把HTML写入；
-        style_text = requests.get(css_url).text
-        mail_html = html_string.format(style=style_text, table=vaild_excel_content)
-        return mail_html, vaild_excel_list
+        # 开始组合排版，如果内容纯空，则返回纯空；
+        if len(vaild_excel_list) > 0:
+            html_string = '''<html>
+                  <head>
+                    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+                    <title>HTML Pandas Dataframe with CSS</title>
+                    <style >
+                        {style}
+                      <!-- 内部样式表结束 -->
+                    </style>
+                  </head>
+        
+                  <body>
+                    {table}
+                  </body>
+                </html>
+                '''
+            # 把HTML写入；
+            style_text = requests.get(css_url).text
+            mail_html = html_string.format(style=style_text, table=vaild_excel_content)
+            return mail_html, vaild_excel_list
+        else:
+            return '', []
 
     def df_to_dingdingPush(self):
         """
@@ -686,7 +705,7 @@ class Get_App_Appinfo:
 
     def get_appinfo(self):
         """
-            * 获取App的基本信息(无关联推荐版本信息)；
+            * 获取App的基本信息(无关联下方的推荐及版本信息)；
         """
         url = 'https://api.qimai.cn/app/appinfo?appid=%s&country=%s' %(self.appid, self.country)
         res = session.get(url, headers=headers)
@@ -729,7 +748,7 @@ class Get_App_Appinfo:
 
     def get_baseinfo(self):
         """
-            * 获取App基础信息(包含开发商名称内购价格、关联推荐产品)
+            * 获取App基础信息(包含开发商名称内购价格、关联下方的推荐产品)
         """
         url = 'https://api.qimai.cn/app/baseinfo?country=%s&appid=%s' %(self.country, self.appid)
         res = session.get(url, headers=headers)
@@ -1388,7 +1407,7 @@ class Get_App_Keyword:
                 top3_keyword = keywordSummary_info['top3']['num']
                 top10_keyword = keywordSummary_info['top10']['num']
                 if int(all_keyword) >= qualified_keyword_num:
-                    return ['覆盖合格', all_keyword, top3_keyword, top10_keyword]
+                    return ['', all_keyword, top3_keyword, top10_keyword]
                 else:
                     return ['覆盖不合格', all_keyword, top3_keyword, top10_keyword]
 
@@ -1943,15 +1962,16 @@ class Get_Keyword_LoseNewDownUp_List:
         self.version = version
         self.device = device
 
-    def get_lostApp_list(self):
+    def get_lostApp_list(self, lost_time_date='oneMonth', sort_value='out_time', type_value='out'):
         """
-            * 获取关键词下落榜产品列表：
+            * 获取关键词下落榜产品及恢复产品列表(同时支持2个接口)：
+            * 默认为查看掉词数据参数，若要查看恢复时参数为：sort_value='re_up_time', type_value='re_up'；
             * 返回列表，列表中是所有json记录；
         """
         self.keyword_lostApp_list = []
         page_num = 1
         while True:
-            url = 'https://api.qimai.cn/search/searchPageExtend?history=%s&version=%s&device=%s&filter=%s&word=%s&country=%s&date=oneMonth&sort=out_time&sort_type=%s&type=out&sdate=%s&edate=%s&page=%s' %(self.top_history, self.version, self.device, self.filter, self.keyword, self.country, self.sort_type, self.start_date, self.end_date, page_num)
+            url = 'https://api.qimai.cn/search/searchPageExtend?history=%s&version=%s&device=%s&filter=%s&word=%s&country=%s&date=%s&sort=%s&sort_type=%s&type=%s&sdate=%s&edate=%s&name=%s&page=%s' %(self.top_history, self.version, self.device, self.filter, self.keyword, self.country, lost_time_date, sort_value, self.sort_type, type_value, self.start_date, self.end_date, self.search_word, page_num)
             res = session.get(url, headers=headers)
             self.keyword_lostApp_list.append(res.json())
             page_num += 1
@@ -1959,11 +1979,12 @@ class Get_Keyword_LoseNewDownUp_List:
                 break
         return self.keyword_lostApp_list
 
-    def get_lostApp_onePage(self, page_num=1):
+    def get_lostApp_onePage(self, page_num=1, lost_time_date='oneMonth', sort_value='out_time', type_value='out'):
         """
             * 获取词下落榜App的数据-第一页：
+            * 默认为查看掉词数据参数，若要查看恢复时参数为：sort_value='re_up_time', type_value='re_up'；
         """
-        url = 'https://api.qimai.cn/search/searchPageExtend?history=%s&version=%s&device=%s&filter=%s&word=%s&country=%s&date=oneMonth&sort=out_time&sort_type=%s&type=out&sdate=%s&edate=%s&page=%s' % (self.top_history, self.version, self.device, self.filter, self.keyword, self.country, self.sort_type, self.start_date, self.end_date, page_num)
+        url = 'https://api.qimai.cn/search/searchPageExtend?history=%s&version=%s&device=%s&filter=%s&word=%s&country=%s&date=%s&sort=%s&sort_type=%s&type=%s&sdate=%s&edate=%s&name=%s&page=%s' %(self.top_history, self.version, self.device, self.filter, self.keyword, self.country, lost_time_date, sort_value, self.sort_type, type_value, self.start_date, self.end_date, self.search_word, page_num)
         res = session.get(url, headers=headers)
         self.lostApp_onePage_data = res.json()
         return self.lostApp_onePage_data
@@ -1983,7 +2004,7 @@ class Get_Keyword_LoseNewDownUp_List:
         self.keyword_newApp_list = []
         page_num = 1
         while True:
-            url = 'https://api.qimai.cn/search/searchPageExtend?history=%s&version=%s&device=%s&filter=%s&word=%s&country=%s&date=oneMonth&sort=new_time&sort_type=%s&type=new&sdate=%s&edate=%s&page=%s' % (self.top_history, self.version, self.device, self.filter, self.keyword, self.country, self.sort_type, self.start_date, self.end_date, page_num)
+            url = 'https://api.qimai.cn/search/searchPageExtend?history=%s&version=%s&device=%s&filter=%s&word=%s&country=%s&date=oneMonth&sort=new_time&sort_type=%s&type=new&sdate=%s&edate=%s&name=%s&page=%s' % (self.top_history, self.version, self.device, self.filter, self.keyword, self.country, self.sort_type, self.start_date, self.end_date, self.search_word, page_num)
             res = session.get(url, headers=headers)
             self.keyword_newApp_list.append(res.json())
             page_num += 1
@@ -1995,7 +2016,7 @@ class Get_Keyword_LoseNewDownUp_List:
         """
             * 获取词下新进App的数据-第一页：
         """
-        url = 'https://api.qimai.cn/search/searchPageExtend?history=%s&version=%s&device=%s&filter=%s&word=%s&country=%s&date=oneMonth&sort=new_time&sort_type=%s&type=new&sdate=%s&edate=%s&page=%s' % (self.top_history, self.version, self.device, self.filter, self.keyword, self.country, self.sort_type, self.start_date, self.end_date, page_num)
+        url = 'https://api.qimai.cn/search/searchPageExtend?history=%s&version=%s&device=%s&filter=%s&word=%s&country=%s&date=oneMonth&sort=new_time&sort_type=%s&type=new&sdate=%s&edate=%s&name=%s&page=%s' % (self.top_history, self.version, self.device, self.filter, self.keyword, self.country, self.sort_type, self.start_date, self.end_date, self.search_word, page_num)
         res = session.get(url, headers=headers)
         self.newApp_onePage_data = res.json()
         return self.newApp_onePage_data
@@ -2015,7 +2036,7 @@ class Get_Keyword_LoseNewDownUp_List:
         self.keyword_rankDown_list = []
         page_num = 1
         while True:
-            url = 'https://api.qimai.cn/search/searchPageExtend?history=%s&version=%s&device=%s&filter=%s&word=%s&country=%s&date=oneMonth&sort=down_rank&sort_type=%s&type=down&sdate=%s&edate=%s&page=%s' % (self.top_history, self.version, self.device, self.filter, self.keyword, self.country, self.sort_type, self.start_date, self.end_date, page_num)
+            url = 'https://api.qimai.cn/search/searchPageExtend?history=%s&version=%s&device=%s&filter=%s&word=%s&country=%s&date=oneMonth&sort=down_rank&sort_type=%s&type=down&sdate=%s&edate=%s&name=%s&page=%s' % (self.top_history, self.version, self.device, self.filter, self.keyword, self.country, self.sort_type, self.start_date, self.end_date, self.search_word, page_num)
             res = session.get(url, headers=headers)
             self.keyword_rankDown_list.append(res.json())
             page_num += 1
@@ -2027,7 +2048,7 @@ class Get_Keyword_LoseNewDownUp_List:
         """
             * 获取词下排名下降较快App的数据-第一页：
         """
-        url = 'https://api.qimai.cn/search/searchPageExtend?history=%s&version=%s&device=%s&filter=%s&word=%s&country=%s&date=oneMonth&sort=down_rank&sort_type=%s&type=down&sdate=%s&edate=%s&page=%s' % (self.top_history, self.version, self.device, self.filter, self.keyword, self.country, self.sort_type, self.start_date, self.end_date, page_num)
+        url = 'https://api.qimai.cn/search/searchPageExtend?history=%s&version=%s&device=%s&filter=%s&word=%s&country=%s&date=oneMonth&sort=down_rank&sort_type=%s&type=down&sdate=%s&edate=%s&name=%s&page=%s' % (self.top_history, self.version, self.device, self.filter, self.keyword, self.country, self.sort_type, self.start_date, self.end_date, self.search_word, page_num)
         res = session.get(url, headers=headers)
         self.rankDown_onePage_data = res.json()
         return self.rankDown_onePage_data
@@ -2047,7 +2068,7 @@ class Get_Keyword_LoseNewDownUp_List:
         self.keyword_rankUp_list = []
         page_num = 1
         while True:
-            url = 'https://api.qimai.cn/search/searchPageExtend?history=%s&version=%s&device=%s&filter=%s&word=%s&country=%s&date=oneMonth&sort=up_rank&sort_type=%s&type=up&sdate=%s&edate=%s&page=%s' % (self.top_history, self.version, self.device, self.filter, self.keyword, self.country, self.sort_type, self.start_date, self.end_date, page_num)
+            url = 'https://api.qimai.cn/search/searchPageExtend?history=%s&version=%s&device=%s&filter=%s&word=%s&country=%s&date=oneMonth&sort=up_rank&sort_type=%s&type=up&sdate=%s&edate=%s&name=%s&page=%s' % (self.top_history, self.version, self.device, self.filter, self.keyword, self.country, self.sort_type, self.start_date, self.end_date, self.search_word, page_num)
             res = session.get(url, headers=headers)
             self.keyword_rankUp_list.append(res.json())
             page_num += 1
@@ -2059,7 +2080,7 @@ class Get_Keyword_LoseNewDownUp_List:
         """
              * 获取词下排名上升较快App的数据-第一页：
         """
-        url = 'https://api.qimai.cn/search/searchPageExtend?history=%s&version=%s&device=%s&filter=%s&word=%s&country=%s&date=oneMonth&sort=up_rank&sort_type=%s&type=up&sdate=%s&edate=%s&page=%s' % (self.top_history, self.version, self.device, self.filter, self.keyword, self.country, self.sort_type, self.start_date, self.end_date, page_num)
+        url = 'https://api.qimai.cn/search/searchPageExtend?history=%s&version=%s&device=%s&filter=%s&word=%s&country=%s&date=oneMonth&sort=up_rank&sort_type=%s&type=up&sdate=%s&edate=%s&name=%s&page=%s' % (self.top_history, self.version, self.device, self.filter, self.keyword, self.country, self.sort_type, self.start_date, self.end_date, self.search_word, page_num)
         res = session.get(url, headers=headers)
         self.rankGoUp_onePage_data = res.json()
         return self.rankGoUp_onePage_data
