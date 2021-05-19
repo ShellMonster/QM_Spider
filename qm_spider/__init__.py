@@ -819,7 +819,7 @@ class Get_App_Rank:
         rankType: 获取排名类型：默认每日排名，其他可选最高排名、全部排名\n
         brand: 价格类型：默认全部，其他可选例如免费、付费、畅销
     """
-    def __init__(self, appid, start_date=today_date-datetime.timedelta(days=6), end_date=today_date, day=1, rankType='day', brand='all', appRankShow=1, subclass='all', simple=1, rankEchartType=1, country='cn', device='iphone'):
+    def __init__(self, appid, start_date=today_date-datetime.timedelta(days=6), end_date=today_date, day=1, rankType='day', brand='all', appRankShow=1, subclass='all', simple=1, rankEchartType=1, country='cn', device='iphone', type=''):
         self.appid = appid
         self.start_date = start_date
         self.end_date = end_date
@@ -832,12 +832,14 @@ class Get_App_Rank:
         self.brand = brand
         self.country = country
         self.device = device
+        self.type = type
 
     def get_rank_data(self):
         """
             * 获取App的榜单数据：
+            * 获取日为单位且开始结束都为今日时，若type=1，则为当前24小时的榜单；
         """
-        url = 'https://api.qimai.cn/app/rankMore?appid=%s&country=%s&brand=%s&day=%s&appRankShow=%s&subclass=%s&simple=%s&sdate=%s&edate=%s&rankEchartType=%s&rankType=%s&device=%s' %(self.appid, self.country, self.brand, self.day, self.appRankShow, self.subclass, self.simple, self.start_date, self.end_date, self.rankEchartType, self.rankType, self.device)
+        url = 'https://api.qimai.cn/app/rankMore?appid=%s&country=%s&brand=%s&day=%s&appRankShow=%s&subclass=%s&simple=%s&sdate=%s&edate=%s&rankEchartType=%s&rankType=%s&device=%s&type=%s' %(self.appid, self.country, self.brand, self.day, self.appRankShow, self.subclass, self.simple, self.start_date, self.end_date, self.rankEchartType, self.rankType, self.device, self.type)
         res = session.get(url, headers=headers)
         self.rank_data = res.json()
         return self.rank_data
@@ -968,8 +970,12 @@ class Get_App_SamePubApp:
         """
         url = 'https://api.qimai.cn/app/samePubApp?appid=%s&country=%s' %(self.appid, self.country)
         res = session.get(url, headers=headers)
-        self.app_samePubApp = res.json()['samePubApps']
-        return self.app_samePubApp
+        try:
+            self.app_samePubApp = res.json()['samePubApps']
+            return self.app_samePubApp
+        except:
+            print('当前 %s 获取异常，将返回空列表')
+            return []
 
     def get_app_genName(self):
         """

@@ -26,7 +26,7 @@ class Send_Mail:
         else:
             self.mail_content = {
                 'Subject': self.subject,  # 邮件标题
-                'From': self.subject, # 来自XX
+                'From': self.send_user, # 来自XX
                 'Content_text': self.mail_text,  # 邮件正文
                 'Attachments': self.file_path  # 邮件附件
             }
@@ -56,7 +56,7 @@ class Send_Mail:
         else:
             self.mail_content = {
                 'Subject': self.subject,  # 邮件标题
-                'From': self.subject, # 来自XX
+                'From': self.send_user, # 来自XX
                 'Content_html': self.mail_text,  # 邮件正文
                 'Attachments': self.file_path  # 邮件附件
             }
