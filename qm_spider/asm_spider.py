@@ -146,24 +146,50 @@ class Get_ASM_Consume:
             run_num = 1
             offset_num = 0
             while True:
-                url = "https://app.searchads.apple.com/cm/api/v3/budgetorders/find"
+                url = "https://app.searchads.apple.com/cm/api/v4/budgetorders/find"
+                # payload = {
+                #     "selector":
+                #         {
+                #             "conditions": [],
+                #             "pagination":
+                #                 {
+                #                     "offset": offset_num,
+                #                     "limit": 50
+                #                 },
+                #             "orderBy":
+                #                 [
+                #                     {
+                #                         "field": "startDate",
+                #                         "sortOrder": "ASCENDING"
+                #                     }
+                #                 ]
+                #         },
+                #     "budgetOrderType": "owned",
+                #     "addCampaignGroupAssignments": True
+                # }
                 payload = {
-                    "selector":
-                        {
-                            "conditions": [],
-                            "pagination":
-                                {
-                                    "offset": offset_num,
-                                    "limit": 50
-                                },
-                            "orderBy":
-                                [
-                                    {
-                                        "field": "startDate",
-                                        "sortOrder": "ASCENDING"
-                                    }
+                    "selector": {
+                        "conditions": [
+                            {
+                                "field": "status",
+                                "operator": "IN",
+                                "values": [
+                                    "ACTIVE",
+                                    "EXHAUSTED"
                                 ]
+                            }
+                        ],
+                        "pagination": {
+                            "offset": offset_num,
+                            "limit": 50
                         },
+                        "orderBy": [
+                            {
+                                "field": "startDate",
+                                "sortOrder": "ASCENDING"
+                            }
+                        ]
+                    },
                     "budgetOrderType": "owned",
                     "addCampaignGroupAssignments": True
                 }
@@ -178,7 +204,7 @@ class Get_ASM_Consume:
                             print('获取第【%s】页【%s】的相关数据...' % (int(offset_num / 50 + 1), budget_order_id))
 
                             # 开始请求详细数据；
-                            url = 'https://app.searchads.apple.com/cm/api/v3/budgetorders/%s' % (budget_order_id)
+                            url = 'https://app.searchads.apple.com/cm/api/v4/budgetorders/%s' % (budget_order_id)
                             res = session.get(url, headers=headers, verify=False)  # 获取内页数据；
                             budget_order_status = res.json()['data']['bo']['status']  # 状态
                             try:
@@ -233,9 +259,6 @@ class Get_ASM_Consume:
                                 '日期': [str(self.today_date)],
                                 '消耗总额': [spent_value]
                             }))
-                        else:
-                            # 如果包含指定的字符就不推送了；
-                            pass
 
                         # 运行次数加 1；
                         run_num += 1

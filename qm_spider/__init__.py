@@ -355,7 +355,7 @@ class Qimai_Outside_Tool:
         end_time = str(day_end)[:8] + str(monthRange_end[1])
         return start_time, end_time
 
-    def df_to_html(self, sort_value='', ascending=False, return_type="css_html", css_url='https://gitee.com/ShellM/My_File/raw/master/center_table.css'):
+    def df_to_html(self, html_title='', sort_value='', ascending=False, return_type="css_html", css_url='https://gitee.com/ShellM/My_File/raw/master/center_table.css'):
         """
             * df转html并添加css样式；
             * 可返回带css样式的html，也可返回不带的(默认带)，对应参数分别为：css_html、table_html；
@@ -363,7 +363,10 @@ class Qimai_Outside_Tool:
         df = self.data_info[0]
         if sort_value != '':
             df.sort_values(sort_value, ascending=ascending, inplace=True)
-        df_html = df.to_html(index=False, classes='mystyle')
+        if len(str(html_title)) > 0:
+            df_html = '\n<h2>%s</h2> %s\n' % (html_title, df.to_html(index=False, classes='mystyle'))
+        else:
+            df_html = df.to_html(index=False, classes='mystyle')
         if return_type == 'table_html':
             return df_html
         else:
@@ -1533,12 +1536,23 @@ class Get_Clear_Rank_List:
         status_type: 清榜应用类型，默认全部，其他可选例如免费、付费\n
         clear_type: 清榜列表产品当前状态筛选，默认全部，其他可选清榜、已恢复
     """
-    def __init__(self, start_date=today_date-datetime.timedelta(days=6), end_date=today_date, genre_type=36, status_type=3, clear_type=1):
+    def __init__(self, start_date=today_date-datetime.timedelta(days=6), end_date=today_date, genre_type=36, status_type=3, clear_type=1, country='cn'):
         self.start_date = start_date
         self.end_date = end_date
         self.clear_type = clear_type
         self.status_type = status_type
         self.genre_type = genre_type
+        self.country = country
+
+    def get_clearRank_trend(self, price_type=3, app_status=1):
+        """
+            * 获取产品清榜数量趋势；
+            * price_type默认1(清榜)，2代表已恢复，0代表全部；
+            * app_status默认0(过滤下架)，为1则不过滤；
+        """
+        url = 'https://api.qimai.cn/rank/monitorAppNumTrend?type=clear&sdate=%s&edate=%s&country=%s&pay_status=%s&status=%s&genre=%s' %(self.start_date, self.end_date, self.country, price_type, app_status, self.genre_type)
+        res = session.get(url, headers=headers)
+        return res.json()
 
     def get_clear_rank(self):
         """
@@ -1567,7 +1581,6 @@ class Get_Clear_Rank_List:
         res = session.get(url, headers=headers)
         return res.json()
 
-
 # 获取清词列表相关数据；
 @qm_auth_check  # 登录检查；
 class Get_Clear_Keyword_List:
@@ -1579,7 +1592,7 @@ class Get_Clear_Keyword_List:
         sort_field: 其他排序规则，默认清词前关键词数量\n
         sort_type: 清词前关键词数量排序规则，默认降序\n
     """
-    def __init__(self, start_date=today_date, end_date=today_date, genre_type=36, filter='offline', search_word='', export_type='rank_clear_words', sort_field='beforeClearNum', sort_type='desc'):
+    def __init__(self, start_date=today_date, end_date=today_date, genre_type=36, filter='offline', search_word='', export_type='rank_clear_words', sort_field='beforeClearNum', sort_type='desc', country='cn'):
         self.start_date = start_date
         self.end_date = end_date
         self.filter = filter
@@ -1588,6 +1601,17 @@ class Get_Clear_Keyword_List:
         self.sort_field = sort_field
         self.sort_type = sort_type
         self.genre_type = genre_type
+        self.country = country
+
+    def get_clearKeyword_trend(self, price_type=3, app_status=0):
+        """
+            * 获取产品清词数量趋势；
+            * price_type默认3(全部)，1代表免费，0代表付费；
+            * app_status默认0(过滤下架)，为1则不过滤；
+        """
+        url = 'https://api.qimai.cn/rank/monitorAppNumTrend?type=clearwords&sdate=%s&edate=%s&country=%s&pay_status=%s&status=%s&genre=%s' % (self.start_date, self.end_date, self.country, price_type, app_status, self.genre_type)
+        res = session.get(url, headers=headers)
+        return res.json()
 
     def get_clear_keyword(self):
         """
@@ -1649,6 +1673,33 @@ class Get_App_ON_Offline_List:
                 break
         return self.app_offline_list
 
+    def get_online_trend(self, price_type=3):
+        """
+            * 获取产品上架趋势；
+            * price_type默认3(全部)，1代表免费，0代表付费
+        """
+        url = 'https://api.qimai.cn/rank/monitorAppNumTrend?type=release&sdate=%s&edate=%s&country=%s&pay_status=%s&genre=%s' %(self.start_date, self.end_date, self.country, price_type, self.genre_type)
+        res = session.get(url, headers=headers)
+        return res.json()
+
+    def get_offline_trend(self, price_type=3):
+        """
+            * 获取产品下架趋势；
+            * price_type默认3(全部)，1代表免费，0代表付费
+        """
+        url = 'https://api.qimai.cn/rank/monitorAppNumTrend?type=offline&sdate=%s&edate=%s&country=%s&pay_status=%s&genre=%s' %(self.start_date, self.end_date, self.country, price_type, self.genre_type)
+        res = session.get(url, headers=headers)
+        return res.json()
+
+    def get_update_trend(self, price_type=3):
+        """
+            * 获取产品更新趋势；
+            * price_type默认3(全部)，1代表免费，0代表付费
+        """
+        url = 'https://api.qimai.cn/version/history/?type=update&sdate=%s&edate=%s&country=%s&status=%s&genre=%s' %(self.start_date, self.end_date, self.country, price_type, self.genre_type)
+        res = session.get(url, headers=headers)
+        return res.json()
+
     def get_app_offline_onePage(self, page_num=1):
         """
             * 获取时间段内下架列表产品相关信息：
@@ -1693,11 +1744,21 @@ class Get_PreOrder_AppList:
         * 获取预订App列表相关数据；
         * 举例①：获取当前预订列表所有预订产品相关数据；
     """
-    def __init__(self,  genre_type=36, country='cn', preOrder_order=1, price_status=3):
+    def __init__(self, genre_type=36, country='cn', preOrder_order=1, price_status=3):
         self.preOrder_order = preOrder_order
         self.price_status = price_status
         self.genre_type = genre_type
         self.country = country
+
+    def get_preorder_trend(self, start_date=today_date-one_day, end_date=today_date, price_type=3):
+        """
+            * 获取产品预订数量趋势；
+            * price_type默认3(全部)，1代表免费，0代表付费；
+            * app_status默认0(过滤下架)，为1则不过滤；
+        """
+        url = 'https://api.qimai.cn/rank/monitorAppNumTrend?type=preOrder&sdate=%s&edate=%s&country=%s&pay_status=%s&genre=%s' % (start_date, end_date, self.country, price_type, self.genre_type)
+        res = session.get(url, headers=headers)
+        return res.json()
 
     def get_preOrder_applist(self):
         """
