@@ -6,8 +6,8 @@ class Get_Top_Keyword:
         self.keyword_hot_start = keyword_hot_start
         self.keyword_hot_end = keyword_hot_end
         self.appid = appid
-        self.start_time = datetime.date.fromisoformat(start_time)
-        self.end_time = datetime.date.fromisoformat(end_time)
+        self.start_time = datetime.date.fromisoformat(str(start_time))
+        self.end_time = datetime.date.fromisoformat(str(end_time))
         self.one_day = datetime.timedelta(days=1)
         self.app_name = app_name
 

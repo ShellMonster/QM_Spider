@@ -342,7 +342,7 @@ class Generate_100_Keyword:
         self.user_ky_list = user_ky_list
         self.spare_keyword_list = []
 
-    def generate_correlation_main(self):
+    def generate_correlation_main(self, range_num=7):
         for keyword in self.user_ky_list:
             keyword_info_list = Get_Keyword_Info(keyword).get_keyword_extend(max_index=200, orderBy='relate', order='desc')
             for info_list in keyword_info_list:
@@ -360,7 +360,10 @@ class Generate_100_Keyword:
         self.spare_keyword_list = list(set(self.spare_keyword_list))
         print('===去重后总计关键词【%s】个===\n' %(len(self.spare_keyword_list)))
         print('========下方为匹配出的关键词覆盖========')
-        for i in range(7):
-            new_str_list = Jieba_Word_algorithm(self.spare_keyword_list).class_generate_words()
-            print(new_str_list)
+        new_str_list = []
+        for i in range(range_num):
+            new_str_text = Jieba_Word_algorithm(self.spare_keyword_list).class_generate_words()
+            new_str_list.append(new_str_text)
+            print(new_str_text)
+        return new_str_list
 

@@ -91,7 +91,7 @@ def run_check_status(push_url=''):
                 return func(*args, **kwargs)
             except:
                 push_text = traceback.format_exc()
-                print(push_text)
+                push_text = push_text[push_text.index('site-packages')+95:]
                 if push_url != '':
                     push_title = '%s：%s' %(os.path.basename(sys.argv[0]), '运行错误')
                     DingDing_Push(push_title, push_status=push_text, push_url=push_url).status_push()
@@ -977,7 +977,7 @@ class Get_App_SamePubApp:
             self.app_samePubApp = res.json()['samePubApps']
             return self.app_samePubApp
         except:
-            print('当前 %s 获取异常，将返回空列表')
+            print('当前 %s 获取异常，将返回空列表' %(self.appid))
             return []
 
     def get_app_genName(self):
@@ -992,6 +992,8 @@ class Get_App_SamePubApp:
                 return self.app_total_genid, self.app_class_genid
             else:
                 return '', ''
+        else:
+            return '', ''
 
     def get_samePubApp_sorce(self):
         """
@@ -1337,7 +1339,7 @@ class Get_App_Keyword:
     def get_keywordHistory_rank(self, keyword, start_date=today_date-datetime.timedelta(7), end_date=today_date, day=1, word_id=''):
         """
             * 获取时间段内关键词历史排名数据(word_id可无，函数自带获取方式)；
-            * 可指定按分钟、小时、天，具体参考官网，默认按天；
+            * 可指定按分钟(2)、小时(0)、天(1)，具体参考官网，默认按天；
             :param keyword: 关键词
             :param start_date: 开始日期
             :param end_date: 结束日期
@@ -1396,10 +1398,10 @@ class Get_App_Keyword:
         """
         self.get_keywordDetail()
         self.json_df = json_normalize(self.app_keywordDetail['data'])
-        if self.version == 'ios14':
-            self.json_df.columns = ['关键词ID', '关键词', '排名', '变动前排名', '排名变动值', '指数', '结果数', '未知1', '未知2', '未知3', '未知4', '未知5', '未知6', '未知7', '未知8', '未知9']
-        else:
-            self.json_df.columns = ['关键词ID', '关键词', '排名', '变动前排名', '排名变动值', '指数', '结果数', '未知1', '未知2']
+        rename_list = ['关键词ID', '关键词', '排名', '变动前排名', '排名变动值', '指数', '结果数', '是否关注']
+        for num in range(self.json_df.shape[1]-8):
+            rename_list.append('未知%s' %(num+1))
+        self.json_df.columns = rename_list
         return self.json_df
 
     def get_app_cover_regular(self, qualified_keyword_num=3000):
@@ -1416,7 +1418,7 @@ class Get_App_Keyword:
                 top3_keyword = keywordSummary_info['top3']['num']
                 top10_keyword = keywordSummary_info['top10']['num']
                 if int(all_keyword) >= qualified_keyword_num:
-                    return ['', all_keyword, top3_keyword, top10_keyword]
+                    return ['覆盖合格', all_keyword, top3_keyword, top10_keyword]
                 else:
                     return ['覆盖不合格', all_keyword, top3_keyword, top10_keyword]
 
