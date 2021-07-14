@@ -11,3 +11,4 @@ beautifulsoup4
 python-pptx
 jieba
 openpyxl
+snapshot_selenium

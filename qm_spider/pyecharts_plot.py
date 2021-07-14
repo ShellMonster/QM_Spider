@@ -359,7 +359,7 @@ class Bar_Py:
         #     c.add_yaxis(agr_data[0], agr_data[1])
         return c
 
-# 柱状图；
+# 饼图；
 class Pie_Py:
     def __init__(self, title, x_value, y_name, y_value, *args, reversal_axis=True, pos_left="right", legend_icon='roundRect', subtitle='', is_show=False):
         self.reversal_axis = reversal_axis

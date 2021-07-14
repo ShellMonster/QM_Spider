@@ -71,6 +71,21 @@ def qm_auth_check(func):
     # 当函数被装饰的时候, 返回装饰器内闭包函数的引用
     return wrapper
 
+# session错误重试；
+def session_retry(max_retry=3):
+    def wrapper(func):
+        def run_check(*args, **kwargs):
+            for i in range(max_retry):
+                try:
+                    return func(*args, **kwargs)
+                except:
+                    ...
+            else:
+                return {'msg': '失败'}
+        # 当函数被装饰的时候, 返回装饰器内闭包函数的引用
+        return run_check
+    return wrapper
+
 # 运行时间统计；
 def run_time_calc(func):
     def wrapper(*args, **kwargs):
@@ -190,6 +205,69 @@ class Sing_Qimai:
         res = session.post(url, headers=headers_post, data=payload)
         return res.json()
 
+# 图床工具；
+class Image_Upload_Url:
+    def __init__(self, image_path):
+        """
+            * 图床类；
+            * 推荐使用upload_image_jd(无需token)；
+        """
+        self.image_path = image_path
+
+    def upload_image_smms(self, token=''):
+        """
+            * SM.MS图床上传api；
+        """
+        if len(str(token)) > 0:
+            url = 'https://sm.ms/api/v2/upload'
+            headers = {
+                'Authorization': token
+            }
+            payload = {
+                'smfile': open(self.image_path, 'rb')
+            }
+            res = requests.post(url, headers=headers, files=payload, verify=False)
+            if res.json()['code'] == 'success':
+                return res.json()['data']['url']
+            elif res.json()['code'] == 'image_repeated':
+                return res.json()['images']
+            else:
+                return ''
+        else:
+            print('请输入上传Token，具体查看sm.ms官方文档：https://doc.sm.ms/#api-Image-Upload')
+            return ''
+
+    def upload_image_hualigs(self, token='', apiType='bilibili'):
+        if len(str(token)) > 0:
+            url = 'https://www.hualigs.cn/api/upload'
+            files = {'image': open(self.image_path, 'rb')}
+            payload = {
+                'apiType': apiType,
+                'token': token
+            }
+            print(files, payload)
+            res = requests.post(url, files=files, data=payload)
+            print(res.json())
+            if res.json()['msg'] == 'success':
+                return res.json()['data']['url'][apiType]
+            else:
+                return ''
+        else:
+            print('请输入上传Token，具体查看hualigs官方文档：https://www.hualigs.cn/doc/upload')
+            return ''
+
+    def upload_image_jd(self):
+        """
+            * 来源：https://image.kieng.cn/jd.html
+        """
+        url = 'https://image.kieng.cn/upload.html?type=jd'
+        files = {'image': open(self.image_path, 'rb')}
+        res = requests.post(url, files=files, headers=headers)
+        if res.json()['code'] == '200' or res.json()['code'] == 200:
+            return res.json()['data']['url']
+        else:
+            return ''
+
 # 计算七麦外的其他备用工具；
 class Qimai_Outside_Tool:
     """
@@ -205,9 +283,9 @@ class Qimai_Outside_Tool:
             * 匹配字符串内是否为纯中文；
         """
         for ch in self.data_info[0]:
-            if u'\u4e00' <= ch <= u'\u9fff':
-                return True
-        return False
+            if not u'\u4e00' <= ch <= u'\u9fff':
+                return False
+        return True
 
     def match_chinese_text(self):
         """
@@ -219,7 +297,20 @@ class Qimai_Outside_Tool:
         chinese_text = re.sub(pattern, "", self.data_info[0]).replace(' ', '')
         return chinese_text
 
-    def match_publisher_company(self):
+    def match_max_min_element(self, match='max'):
+        """
+            * 匹配字符或者列表中出现最多的字符或者元素(仅支持列表或字符串)；
+            * 默认查询最多的，如果所有元素都不一样无重复，则取第一个；
+        """
+        if len(self.data_info[0]) > 0:
+            if match == 'max':
+                return max(self.data_info[0], key=self.data_info[0].count)
+            else:
+                return min(self.data_info[0], key=self.data_info[0].count)
+        else:
+            return ''
+
+    def match_publisher_company(self, appid=''):
         """
             * 匹配开发者是否为公司账号(自带匹配库)；
         """
@@ -227,7 +318,22 @@ class Qimai_Outside_Tool:
         for company_str in company_str_list:
             if company_str.lower() in self.data_info[0].lower() or len(self.data_info[0])>20:
                 return True
-        return False
+        else:
+            if appid != '':
+                # 都无匹配上的，则获取产品信息对应开发者和开发商，匹配上则为公司否则不是；
+                app_info_resp = Get_App_Appinfo(appid).get_appinfo()
+                if len(app_info_resp) > 0:
+                    publisher = app_info_resp['appInfo']['publisher']
+                    publisher_seller = app_info_resp['appInfo']['publisher_seller']
+                    if str(publisher).lower() == str(publisher_seller).lower():
+                        return False
+                    else:
+                        return True
+                else:
+                    # 产品下架了无法处理；
+                    return ''
+            else:
+                return False
 
     def match_fillna_value(self):
         """
@@ -434,12 +540,15 @@ class Qimai_Outside_Tool:
         else:
             return '', []
 
-    def df_to_dingdingPush(self):
+    def df_to_dingdingPush(self, title=''):
         """
             * 表格数据转换为钉钉markdown格式进行推送；
         """
         columns_list = self.data_info[0].columns.values
-        push_text = '**'
+        if len(str(title)) > 0:
+            push_text = '### %s\n\n**' %(title)
+        else:
+            push_text = '**'
         for columns_value in columns_list:
             push_text += '%s | ' %(columns_value)
         push_text = push_text[:-3]  # 去除最后一个|
@@ -713,15 +822,23 @@ class Get_App_Appinfo:
         url = 'https://api.qimai.cn/app/appinfo?appid=%s&country=%s' %(self.appid, self.country)
         res = session.get(url, headers=headers)
         self.appinfo = res.json()
-        return self.appinfo
+        if int(self.appinfo['code']) == 10000:
+            return self.appinfo
+        else:
+            self.appinfo = {}
+            return self.appinfo
 
     def get_subname(self):
         """
             * 获取App的名称(不含标题)；
         """
         self.get_appinfo()
-        self.subname = self.appinfo['appInfo']['subname']
-        return self.subname
+        if len(self.appinfo)>0:
+            self.subname = self.appinfo['appInfo']['subname']
+            return self.subname
+        else:
+            self.subname = ''
+            return self.subname
 
     def get_publisher_name(self):
         """
@@ -729,8 +846,12 @@ class Get_App_Appinfo:
             * publisher；
         """
         self.get_appinfo()
-        self.publisher_name = self.appinfo['appInfo']['publisher']
-        return self.publisher_name
+        if len(self.appinfo) > 0:
+            self.publisher_name = self.appinfo['appInfo']['publisher']
+            return self.publisher_name
+        else:
+            self.publisher_name = ''
+            return self.publisher_name
 
     def get_developer_name(self):
         """
@@ -738,16 +859,24 @@ class Get_App_Appinfo:
             * publisher_seller；
         """
         self.get_appinfo()
-        self.developer_name = self.appinfo['appInfo']['publisher_seller']
-        return self.developer_name
+        if len(self.appinfo) > 0:
+            self.developer_name = self.appinfo['appInfo']['publisher_seller']
+            return self.developer_name
+        else:
+            self.developer_name = ''
+            return self.developer_name
 
     def get_purchases_num(self):
         """
             * 获取App的内购数数量；
         """
         self.get_appinfo()
-        self.purchases_num = self.appinfo['appInfo']['purchases_num']
-        return self.purchases_num
+        if len(self.appinfo) > 0:
+            self.purchases_num = self.appinfo['appInfo']['purchases_num']
+            return self.purchases_num
+        else:
+            self.purchases_num = 0
+            return self.purchases_num
 
     def get_baseinfo(self):
         """
@@ -978,18 +1107,22 @@ class Get_App_SamePubApp:
             return self.app_samePubApp
         except:
             print('当前 %s 获取异常，将返回空列表' %(self.appid))
-            return []
+            self.app_samePubApp = ['', '']
+            return self.app_samePubApp
 
     def get_app_genName(self):
         """
             * 获取当前App的两个分类名称(中文)；
         """
         self.get_samePubApp()
-        for info in self.app_samePubApp:
-            if str(info['appInfo']['appId']) == str(self.appid):
-                self.app_total_genid = info['total']['brand']
-                self.app_class_genid = info['class']['brand']
-                return self.app_total_genid, self.app_class_genid
+        if self.app_samePubApp[0] != '':
+            for info in self.app_samePubApp:
+                if str(info['appInfo']['appId']) == str(self.appid):
+                    self.app_total_genid = info['total']['brand']
+                    self.app_class_genid = info['class']['brand']
+                    return self.app_total_genid, self.app_class_genid
+                else:
+                    return '', ''
             else:
                 return '', ''
         else:
@@ -1020,7 +1153,7 @@ class Get_Keyword_Info:
         * 举例②：获取关键词下联想词；
         search_type: 搜索类型：默认全部，其他可选例如App、开发者等
     """
-    def __init__(self, keyword, start_date=today_date, end_date=today_date-one_day, search_type='all', country='cn', version='ios12', device='iphone', status=6):
+    def __init__(self, keyword, start_date=today_date-one_day, end_date=today_date, search_type='all', country='cn', version='ios12', device='iphone', status=6):
         self.keyword = keyword
         self.start_date = start_date
         self.end_date = end_date
@@ -1030,12 +1163,13 @@ class Get_Keyword_Info:
         self.version = version
         self.status = status
 
+    @session_retry(max_retry=3)
     def get_keyword_search(self, page_num=1):
         """
             * 获取关键词下产品信息(第一页)：
             * 默认搜索版本为iOS 12；
         """
-        url = 'https://api.qimai.cn/search/index?device=%s&country=%s&search=%s&date=%s&version=%s&search_type=%s&changeRateDate=&changeRateType=top10&sdate=%s&edate=%s&status=%s&page=%s' %(self.device, self.country, self.keyword, self.start_date, self.version, self.search_type, self.start_date, self.end_date, self.status, page_num)
+        url = 'https://api.qimai.cn/search/index?device=%s&country=%s&search=%s&date=%s&version=%s&search_type=%s&changeRateDate=&changeRateType=top10&sdate=%s&edate=%s&status=%s&page=%s' %(self.device, self.country, self.keyword, self.start_date, self.version, self.search_type, self.end_date, self.start_date, self.status, page_num)
         headers = {
             'origin': 'https://www.qimai.cn',
             'referer': 'https://www.qimai.cn/',
@@ -1054,7 +1188,7 @@ class Get_Keyword_Info:
         page_num = 1
         run_app_num = 50
         while True:
-            url = 'https://api.qimai.cn/search/index?device=%s&country=%s&search=%s&date=%s&version=%s&search_type=%s&changeRateDate=&page=%s&changeRateType=top10&sdate=%s&edate=%s&status=%s' %(self.device, self.country, self.keyword, self.start_date, self.version, self.search_type, page_num, self.start_date, self.end_date, self.status)
+            url = 'https://api.qimai.cn/search/index?device=%s&country=%s&search=%s&date=%s&version=%s&search_type=%s&changeRateDate=&page=%s&changeRateType=top10&sdate=%s&edate=%s&status=%s' %(self.device, self.country, self.keyword, self.end_date, self.version, self.search_type, page_num, self.end_date, self.start_date, self.status)
             headers = {
                 'origin': 'https://www.qimai.cn',
                 'referer': 'https://www.qimai.cn/',
@@ -1094,6 +1228,18 @@ class Get_Keyword_Info:
         self.keyword_ChangeRate = res.json()
         return self.keyword_ChangeRate
 
+    def get_keyword_ResultTop10Rate(self, type='top10'):
+        """
+            * 获取关键词的有效变动率数据；
+            * 默认T10变动率，且默认为昨日到今日的数据；
+            :param type: 查看T10还是全部，例：top10
+        """
+        url = 'https://api.qimai.cn/search/keywordResultTop10Rate?device=%s&word=%s&type=%s&version=%s&sdate=%s&edate=%s' %(self.device, self.keyword, type, self.version, self.start_date, self.end_date)
+        res = session.get(url, headers=headers)
+        self.keyword_ResultTop10Rate = res.json()
+        return self.keyword_ResultTop10Rate
+
+    @session_retry(max_retry=3)
     def get_keywordHistory_hints(self):
         """
             * 获取时间段内关键词历史热度：
@@ -1105,6 +1251,18 @@ class Get_Keyword_Info:
         res = session.post(url, data=payload, headers=headers_post)
         self.keywordHistory_hints = res.json()
         return self.keywordHistory_hints
+
+    @session_retry(max_retry=3)
+    def get_keywordHistory_result(self):
+        """
+            * 获取时间段内关键词历史搜索结果数：
+            start_date: 时间段开始日期\n
+            end_date: 时间段结束日期
+        """
+        url = 'https://api.qimai.cn/app/searchNumber?sdate=%s&edate=%s&device=iphone&word=%s&country=%s&version=%s' %(self.start_date, self.end_date, self.keyword, self.country, self.version)
+        res = session.post(url, headers=headers)
+        self.keywordHistory_result = res.json()
+        return self.keywordHistory_result
 
     def get_hotSearch_data(self):
         """
@@ -1251,20 +1409,43 @@ class Get_App_Keyword:
         * 举例①：获取App的对应时间覆盖数据(默认当日)；
         * 举例②：获取App不同日期的T3、T5数据；
     """
-    def __init__(self, appid, run_time=today_date, country='cn', version='ios12', device='iphone'):
+    def __init__(self, appid, start_date=today_date, end_date=today_date-one_day, country='cn', version='ios12', device='iphone'):
         self.appid = appid
-        self.run_time = run_time
+        self.start_date = start_date
+        self.end_date = end_date
         self.country = country
         self.device = device
         self.version = version
 
-    def get_keywordDetail(self):
+    def get_keywordDetail(self, page_num='1', hints_min='', hints_max='', ranking_min='', ranking_max='', result_min='', result_max='', search='', size='100'):
         """
             * 获取产品在某日的所有覆盖词数据：
             * 默认获取日期为当日；
         """
-        url = 'https://api.qimai.cn/app/keywordDetail?country=%s&appid=%s&version=%s&sdate=%s&device=%s&edate=' %(self.country, self.appid, self.version, self.run_time, self.device)
-        res = session.get(url, headers=headers)
+        url = 'https://api.qimai.cn/appDetail/keywordDetail'
+        payload = {
+          'country': self.country,
+          'sdate': self.start_date,
+          'edate': self.end_date,
+          'appid': self.appid,
+          'version': self.version,
+          'device': self.device,
+          'hints_min': hints_min,
+          'hints_max': hints_max,
+          'ranking_min': ranking_min,
+          'ranking_max': ranking_max,
+          'result_min': result_min,
+          'result_max': result_max,
+          'search': search,
+          'quick_rank': 'all',
+          'type': 'all',
+          'page': page_num,
+          'size': size,
+          'sort': 'srank',
+          'sort_type': 'asc',
+          'trigger': ''
+        }
+        res = session.post(url, headers=headers, data=payload)
         self.app_keywordDetail = res.json()
         return self.app_keywordDetail
 
@@ -1274,8 +1455,16 @@ class Get_App_Keyword:
             * 此项包含掉词数量及新增词数量；
             * 覆盖词上方的汇总表，默认获取日期为当日；
         """
-        url = 'https://api.qimai.cn/app/keywordSummary?country=%s&appid=%s&version=%s&sdate=%s&device=%s&edate=' %(self.country, self.appid, self.version, self.run_time, self.device)
-        res = session.get(url, headers=headers)
+        url = 'https://api.qimai.cn/app/keywordSummary'
+        payload = {
+          'country': self.country,
+          'sdate': self.start_date,
+          'edate': self.end_date,
+          'appid': self.appid,
+          'version': self.version,
+          'device': self.device
+        }
+        res = session.post(url, data=payload, headers=headers)
         self.app_keywordSummary = res.json()
         return self.app_keywordSummary
 
@@ -1315,8 +1504,11 @@ class Get_App_Keyword:
 
         return fugai_one_data_list, fugai_two_data_list
 
-    def get_search_appKeyword(self, keyword, end_date, start_date=today_date):
-        url = 'https://api.qimai.cn/app/searchAppKeywords?keywords=%s&country=%s&device=%s&version=%s&appid=%s&sdate=%s&edate=%s' %(keyword, self.country, self.device, self.version, self.appid, start_date, end_date)
+    def get_search_appKeyword(self, keyword):
+        """
+            * 尚未填写函数对应功能；
+        """
+        url = 'https://api.qimai.cn/app/searchAppKeywords?keywords=%s&country=%s&device=%s&version=%s&appid=%s&sdate=%s&edate=%s' %(keyword, self.country, self.device, self.version, self.appid, self.start_date, self.end_date)
         res = session.get(url, headers=headers)
         self.search_appKeyword_data = res.json()
         return self.search_appKeyword_data
@@ -1371,7 +1563,7 @@ class Get_App_Keyword:
         """
             * 匹配App下某个关键词是否未覆盖；
         """
-        self.get_search_appKeyword(keyword, end_date, start_date)
+        self.get_search_appKeyword(keyword)
         if self.search_appKeyword_data['msg'] == '成功':
             for i in self.search_appKeyword_data['wordinfo']:
                 n_keyword = i['w']
@@ -1391,15 +1583,15 @@ class Get_App_Keyword:
         else:
             return '未知'
 
-    def get_keywordDetail_to_df(self):
+    def get_keywordDetail_to_df(self, page_num='1', hints_min='', hints_max='', ranking_min='', ranking_max='', result_min='', result_max='', search='', size='100'):
         """
             * 关键词覆盖数据转换dataframe格式：
             * 返回dataframe格式并重命名列；
         """
-        self.get_keywordDetail()
+        self.get_keywordDetail(page_num, hints_min, hints_max, ranking_min, ranking_max, result_min, result_max, search, size)
         self.json_df = json_normalize(self.app_keywordDetail['data'])
-        rename_list = ['关键词ID', '关键词', '排名', '变动前排名', '排名变动值', '指数', '结果数', '是否关注']
-        for num in range(self.json_df.shape[1]-8):
+        rename_list = ['关键词ID', '关键词', '排名', '变动前排名', '排名变动值', '指数', '结果数', '是否关注', '流行度']
+        for num in range(self.json_df.shape[1]-9):
             rename_list.append('未知%s' %(num+1))
         self.json_df.columns = rename_list
         return self.json_df

@@ -5,11 +5,11 @@ import setuptools
 
 setuptools.setup(
     name="QM_Spider",
-    version="0.0.109",
+    version="0.0.120",
     author="@道长",
     author_email="ctrlf4@yeah.net",
     license='Apache License 2.0',
-    description="QiMai Spider library",
+    description="QueueMaster Spider library",
     long_description="QiMai Spider library",
     long_description_content_type="text/markdown",
     url="https://github.com/ShellMonster/QM_Spider",
@@ -44,7 +44,8 @@ setuptools.setup(
         'beautifulsoup4',
         'python-pptx',
         'jieba',
-        'openpyxl'
+        'openpyxl',
+        'snapshot_selenium'
     ]
 )
 

@@ -354,7 +354,7 @@ class Generate_100_Keyword:
 
                     if int(relate) > 50 and int(hints) > 4605 and int(search_no) > 0 and len(word) <= 5:
                         self.spare_keyword_list.append(word)
-                        print('当前已匹配【%s】个关键词，尚未去重' %(len(self.spare_keyword_list)))
+                        print('当前已匹配【%s】个关键词【%s - %s】，尚未去重' %(len(self.spare_keyword_list), word, hints))
 
         # 调用组合算法，生成100字符；
         self.spare_keyword_list = list(set(self.spare_keyword_list))
