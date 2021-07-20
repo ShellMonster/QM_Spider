@@ -7,7 +7,7 @@
 @Website：www.geekaso.com.com\n
 @Copyright：©2019-2021 七麦数据
 """
-
+import pandas as pd
 from qm_spider import *
 
 # 获取需要查询的关键词列表；
@@ -340,9 +340,9 @@ class Get_Search_AppTitle:
 class Generate_100_Keyword:
     def __init__(self, user_ky_list):
         self.user_ky_list = user_ky_list
-        self.spare_keyword_list = []
+        self.spare_keyword_df = pd.DataFrame({})
 
-    def generate_correlation_main(self, range_num=7):
+    def generate_correlation_main(self, range_num=7, run_type='生成'):
         for keyword in self.user_ky_list:
             keyword_info_list = Get_Keyword_Info(keyword).get_keyword_extend(max_index=200, orderBy='relate', order='desc')
             for info_list in keyword_info_list:
@@ -352,18 +352,47 @@ class Generate_100_Keyword:
                     hints = keyword_info['hints']
                     search_no = keyword_info['search_no']
 
-                    if int(relate) > 50 and int(hints) > 4605 and int(search_no) > 0 and len(word) <= 5:
-                        self.spare_keyword_list.append(word)
-                        print('当前已匹配【%s】个关键词【%s - %s】，尚未去重' %(len(self.spare_keyword_list), word, hints))
-
-        # 调用组合算法，生成100字符；
-        self.spare_keyword_list = list(set(self.spare_keyword_list))
+                    if run_type == '生成':
+                        if int(relate) > 50 and int(hints) > 4605 and int(search_no) > 0 and len(word) <= 5:
+                            self.spare_keyword_df = self.spare_keyword_df.append(pd.DataFrame({
+                                '关键词': [word],
+                                '指数': [hints],
+                                '结果数': [search_no],
+                                '相关度': [relate],
+                                '来自词': [keyword]
+                            }))
+                            print('当前已匹配【%s】个关键词【%s - %s】，尚未去重' %(self.spare_keyword_df.shape[0], word, hints))
+                    elif run_type == '导出':
+                        self.spare_keyword_df = self.spare_keyword_df.append(pd.DataFrame({
+                            '关键词': [word],
+                            '指数': [hints],
+                            '结果数': [search_no],
+                            '相关度': [relate],
+                            '来自词': [keyword]
+                        }))
+                        print('当前已匹配【%s】个关键词【%s - %s】，尚未去重' % (self.spare_keyword_df.shape[0], word, hints))
+                    else:
+                        print('run_type传参错误，请重试')
+                        exit()
+        # 数据去重；
+        self.spare_keyword_df.drop_duplicates(['关键词'], inplace=True)
+        self.spare_keyword_list = self.spare_keyword_df['关键词'].tolist()
         print('===去重后总计关键词【%s】个===\n' %(len(self.spare_keyword_list)))
-        print('========下方为匹配出的关键词覆盖========')
-        new_str_list = []
-        for i in range(range_num):
-            new_str_text = Jieba_Word_algorithm(self.spare_keyword_list).class_generate_words()
-            new_str_list.append(new_str_text)
-            print(new_str_text)
-        return new_str_list
+        # 调用组合算法，生成100字符；或导出关键词；
+        if run_type == '生成':
+            print('========下方为匹配出的关键词覆盖========')
+            new_str_list = []
+            for i in range(range_num):
+                new_str_text = Jieba_Word_algorithm(self.spare_keyword_list).class_generate_words()
+                new_str_list.append(new_str_text)
+                print(new_str_text)
+            # return '\n'.join(new_str_list)
+            return new_str_list
+        elif run_type == '导出':
+            self.spare_keyword_df.sort_values('指数', ascending=False, inplace=True)
+            return self.spare_keyword_df
+        else:
+            print('run_type传参错误，请重试')
+            exit()
+
 

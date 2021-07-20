@@ -141,7 +141,7 @@ class DingDing_Push:
             "Charset": "UTF-8"
         }
 
-    def status_push(self):
+    def status_push(self, isAtAll=False, atMobiles=[], atUserIds=[]):
         """
             * 状态告知推送：
             一般用于报错或执行成功推送，\n
@@ -151,14 +151,19 @@ class DingDing_Push:
             "msgtype": "markdown",
             "markdown": {
                 "title": "【%s】%s" %(self.now_time[:10], self.push_title),
-                "text": "**推送事件**：%s\n\n**推送时间**：%s\n\n**推送状态**：%s" %(self.push_title, self.now_time, self.push_status)
+                "text": "**推送事件**：%s\n\n**推送时间**：%s\n\n**推送状态**：%s" %(self.push_title, self.now_time, self.push_status) + ''.join(['@'+str(i) for i in atMobiles])
+            },
+            "at": {
+                "atMobiles": atMobiles,
+                "atUserIds": atUserIds,
+                "isAtAll": isAtAll
             }
         }
         payload = json.dumps(payload)
         res = requests.post(self.push_url, data=payload, headers=self.headers)
         return res.json()
 
-    def app_args_markdown_push(self):
+    def app_args_markdown_push(self, isAtAll=False, atMobiles=[], atUserIds=[]):
         """
             * 万能推送-markdown：
             推送内容自己写为Markdown形式即可；
@@ -167,18 +172,28 @@ class DingDing_Push:
             "msgtype": "markdown",
             "markdown": {
                 "title": "%s" %(self.push_title),
-                "text": "%s" %(self.other_var[0])
+                "text": "%s" %(self.other_var[0]) + ''.join(['@'+str(i) for i in atMobiles])
+            },
+            "at": {
+                  "atMobiles": atMobiles,
+                  "atUserIds": atUserIds,
+                  "isAtAll": isAtAll
             }
         }
         payload = json.dumps(payload)
         res = requests.post(self.push_url, data=payload, headers=self.headers)
         return res.json()
 
-    def app_args_text_push(self):
+    def app_args_text_push(self, isAtAll=False, atMobiles=[], atUserIds=[]):
         payload = {
             "msgtype": "text",
             "text": {
-                "content": "%s" %(self.other_var[0])
+                "content": "%s" %(self.other_var[0]) + ''.join(['@'+str(i) for i in atMobiles])
+            },
+            "at": {
+                "atMobiles": atMobiles,
+                "atUserIds": atUserIds,
+                "isAtAll": isAtAll
             }
         }
         payload = json.dumps(payload)
@@ -238,6 +253,10 @@ class Image_Upload_Url:
             return ''
 
     def upload_image_hualigs(self, token='', apiType='bilibili'):
+        """
+            * 遇见图床；
+            * 官网：https://www.hualigs.cn
+        """
         if len(str(token)) > 0:
             url = 'https://www.hualigs.cn/api/upload'
             files = {'image': open(self.image_path, 'rb')}
@@ -245,9 +264,7 @@ class Image_Upload_Url:
                 'apiType': apiType,
                 'token': token
             }
-            print(files, payload)
             res = requests.post(url, files=files, data=payload)
-            print(res.json())
             if res.json()['msg'] == 'success':
                 return res.json()['data']['url'][apiType]
             else:
@@ -832,9 +849,9 @@ class Get_App_Appinfo:
         """
             * 获取App的名称(不含标题)；
         """
-        self.get_appinfo()
-        if len(self.appinfo)>0:
-            self.subname = self.appinfo['appInfo']['subname']
+        appinfo_resp = self.get_appinfo()
+        if len(appinfo_resp)>0:
+            self.subname = appinfo_resp['appInfo']['subname']
             return self.subname
         else:
             self.subname = ''
@@ -1501,7 +1518,6 @@ class Get_App_Keyword:
                     fugai_two_data_list[5] = int(i['top3']['num'])
                 elif i['title'] == '≥8000':
                     fugai_two_data_list[6] = int(i['top3']['num'])
-
         return fugai_one_data_list, fugai_two_data_list
 
     def get_search_appKeyword(self, keyword):

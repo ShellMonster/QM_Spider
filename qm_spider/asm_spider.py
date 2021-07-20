@@ -1,3 +1,5 @@
+import json
+
 from qm_spider import *
 
 
@@ -81,12 +83,12 @@ class Get_ASM_Consume:
                 res = session.post(url, headers=headers, verify=False)
                 print('...模拟登陆网页成功...')
                 if res.status_code == 204:
-                    url = 'https://app.searchads.apple.com/cm/api/v1/startup'
+                    url = 'https://app-ads.apple.com/cm/api/v1/startup'
                     headers = {
                         'Accept': 'application/json, text/javascript, */*; q=0.01',
                         'Connection': 'keep-alive',
                         'Content-Type': 'application/json',
-                        'Host': 'app.searchads.apple.com',
+                        'Host': 'app-ads.apple.com',
                         'Referer': 'https://appleid.apple.com/widget/account/repair?trustedWidgetDomain=https%3A%2F%2Fidmsa.apple.com&widgetKey=a01459d797984726ee0914a7097e53fad42b70e1f08d09294d14523a1d4f61e1&rv=1&language=zh_CN_CHN',
                         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36',
                         'X-Requested-With': 'XMLHttpRequest'
@@ -97,6 +99,7 @@ class Get_ASM_Consume:
                         self.res_token_cm = session.cookies.get_dict()['XSRF-TOKEN-CM']
                         print('...正在获取Token...')
                         print('当前Token：%s' %(self.res_token_cm))
+                        # 返回token；
                         return self.res_token_cm
                     else:
                         print('...获取Token失败...请重试...')
@@ -112,9 +115,9 @@ class Get_ASM_Consume:
             return '当前接口请求异常: %s' %(url)
 
     def asm_credits(self):
-        url = 'https://app.searchads.apple.com/cm/api/v1/orgs/%s/locdetails' %(self.defOrg_id)
+        url = 'https://app-ads.apple.com/cm/api/v1/orgs/%s/locdetails' %(self.defOrg_id)
         headers = {
-            'Host': 'app.searchads.apple.com',
+            'Host': 'app-ads.apple.com',
             'Connection': 'keep-alive',
             'Content-Type': 'application/json;charset=UTF-8',
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36',
@@ -128,7 +131,7 @@ class Get_ASM_Consume:
         df_new = pd.DataFrame({})  # 创建个当天的；
         res_status = self.asm_login()
         headers = {
-            'Host': 'app.searchads.apple.com',
+            'Host': 'app-ads.apple.com',
             'Connection': 'keep-alive',
             'Content-Type': 'application/json;charset=UTF-8',
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36',
@@ -320,6 +323,144 @@ class Get_ASM_Consume:
             dingding_push.status_push()
             return '...登陆异常，请重试...'
 
+    def get_soid_token(self, company_name):
+        url = 'https://app-ads.apple.com/cm/api/v1/startup/orgs'
+        headers = {
+            'Host': 'app-ads.apple.com',
+            'Connection': 'keep-alive',
+            'Content-Type': 'application/json;charset=UTF-8',
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36',
+            'X-XSRF-TOKEN-CM': self.res_token_cm
+        }
+        res = session.get(url, headers=headers)
+        for org_info in res.json()['data']['orgDetails']:
+            if org_info['name'] == company_name:
+                s = requests.cookies.RequestsCookieJar()
+                s.set('searchads.soid', org_info['id'])
+                session.cookies.update(s)
+                break
+        return session
+
+    def get_asm_fileList(self, company_name=''):
+        """
+            * 获取中国区ASA账号上提交的资料列表及数据；
+        """
+        if len(company_name) > 0:
+            self.get_soid_token(company_name)
+        url = 'https://app-ads.apple.com/cm/api/v1/doc/find'
+        offset_num = 0
+        res_list = []
+        fileid_list = []
+        while True:
+            print('正在获取第【%s】页的上传文件列表' %(int(offset_num/50+1)))
+            payload = {
+                "orderBy": [
+                    {
+                        "field": "modificationTime",
+                        "sortOrder": "DESCENDING"
+                    }
+                ],
+                "pagination": {
+                    "offset": offset_num,
+                    "limit": 1000
+                }
+            }
+            headers = {
+                'Host': 'app-ads.apple.com',
+                'Connection': 'keep-alive',
+                'Content-Type': 'application/json;charset=UTF-8',
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36',
+                'X-XSRF-TOKEN-CM': self.res_token_cm
+            }
+            res = session.post(url, headers=headers, data=json.dumps(payload), verify=False)
+            if len(res.json()['data']) > 0 and res.json()['data'][0]['id'] not in fileid_list:
+                file_list = [i['id'] for i in res.json()['data']]
+                fileid_list += file_list
+                res_list.append(res.json())
+                offset_num += 50
+            else:
+                break
+        return res_list
+
+    def get_asm_resStatus(self, company_name=''):
+        """
+            * 获取中国区ASA账号审核状态列表；
+        """
+        if len(company_name) > 0:
+            self.get_soid_token(company_name)
+        url = 'https://app-ads.apple.com/cm/api/v1/approval/find'
+        offset_num = 0
+        res_list = []
+        appid_list = []
+        headers = {
+            'Host': 'app-ads.apple.com',
+            'Connection': 'keep-alive',
+            'Content-Type': 'application/json',
+            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.67',
+            'X-XSRF-TOKEN-CM': self.res_token_cm
+        }
+        while True:
+            print('正在获取第【%s】页的APP审核信息列表' %(int(offset_num/50+1)))
+            payload = {"pagination":{"offset":offset_num,"limit":100}}
+            res = session.post(url, headers=headers, data=json.dumps(payload), verify=False)
+            if len(res.json()['data']) > 0 and res.json()['data'][0] not in appid_list:
+                app_list = [i for i in res.json()['data']]
+                appid_list += app_list
+                res_list.append(res.json())
+                offset_num += 50
+            else:
+                break
+        return res_list
+
+    def get_plan_status(self, soid, start_date=today_date-datetime.timedelta(6), end_date=today_date):
+        s = requests.cookies.RequestsCookieJar()
+        s.set('searchads.soid', str(soid))
+        session.cookies.update(s)
+        # 开始请求；
+        url = 'https://app-ads.apple.com/cm/api/v4/reports'
+        offset_num = 0
+        headers = {
+            'Host': 'app-ads.apple.com',
+            'Connection': 'keep-alive',
+            'Content-Type': 'application/json',
+            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.67',
+            'X-XSRF-TOKEN-CM': self.res_token_cm
+        }
+        res_list = []
+        while True:
+            payload = {
+                "type": "campaigns",
+                "filter": {
+                    "startTime": str(start_date),
+                    "endTime": str(end_date),
+                    "timeZone": "UTC",
+                    "returnGrandTotals": True,
+                    "returnRowTotals": True,
+                    "selector": {
+                        "pagination": {
+                            "offset": offset_num,
+                            "limit": 50
+                        },
+                        "orderBy": [
+                            {
+                                "field": "localSpend",
+                                "sortOrder": "DESCENDING"
+                            }
+                        ]
+                    },
+                    "returnRecordsWithNoMetrics": True
+                }
+            }
+            res = session.post(url, data=json.dumps(payload), headers=headers, verify=False)
+            print(res.json())
+            if len(res.json()['data']['row']) > 0:
+                res_list.append(res.json())
+                offset_num += 50
+            else:
+                break
+        return res_list
+
+
 # 封装获取账单的脚本；
 class Get_ASM_Bill(Get_ASM_Consume):
     def __init__(self, accountName, accountPwd, start_date, end_date):
@@ -336,7 +477,7 @@ class Get_ASM_Bill(Get_ASM_Consume):
         while True:
             url = 'https://app.searchads.apple.com/cm/api/v1/locinvoicesummary'
             headers = {
-                'Host': 'app.searchads.apple.com',
+                'Host': 'app-ads.apple.com',
                 'Connection': 'keep-alive',
                 'Content-Type': 'application/json;charset=UTF-8',
                 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36',
