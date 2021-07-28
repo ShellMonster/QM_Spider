@@ -114,8 +114,15 @@ class Get_ASM_Consume:
             print('...模拟启动浏览器失败...请重试...')
             return '当前接口请求异常: %s' %(url)
 
-    def asm_credits(self):
-        url = 'https://app-ads.apple.com/cm/api/v1/orgs/%s/locdetails' %(self.defOrg_id)
+    def asm_credits(self, money_type=''):
+        """
+            * 获取账户余额，默认获取账户自有货币；
+            * 可修改为RMB,USD，即人民币；
+        """
+        if len(money_type) > 0:
+            url = 'https://app-ads.apple.com/cm/api/v1/orgs/%s/locdetails?currencyCode=%s' %(self.defOrg_id, money_type)
+        else:
+            url = 'https://app-ads.apple.com/cm/api/v1/orgs/%s/locdetails' % (self.defOrg_id)
         headers = {
             'Host': 'app-ads.apple.com',
             'Connection': 'keep-alive',
@@ -124,9 +131,11 @@ class Get_ASM_Consume:
             'X-XSRF-TOKEN-CM': self.res_token_cm
         }
         res = session.get(url, headers=headers, verify=False, timeout=5)
-        return res.json()['data']['availableCredit'][0]['availableAmount']['value']
+        money_value = res.json()['data']['availableCredit'][0]['availableAmount']['value']
+        money_unit = res.json()['data']['availableCredit'][0]['availableAmount']['currencyCode']
+        return money_value, money_unit
 
-    def asm_consume(self):
+    def asm_consume(self, company_name='', money_type=''):
         push_text_list = []  # 汇总推送的内容；
         df_new = pd.DataFrame({})  # 创建个当天的；
         res_status = self.asm_login()
@@ -137,7 +146,15 @@ class Get_ASM_Consume:
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36',
             'X-XSRF-TOKEN-CM': self.res_token_cm
         }
+        if len(company_name) > 0:
+            self.get_soid_token(company_name, get_type='orgid')
+        ####### 重置文件区 #######
+        self.yes_file_path = '%s%s_%s-%s' %(self.file_path, self.yesterday_date, company_name, self.file_name)
+        self.yes_yes_file_path = '%s%s_%s-%s' %(self.file_path, self.yesterday_date-one_day, company_name, self.file_name)
+        self.today_file_path = '%s%s_%s-%s' %(self.file_path, self.today_date, company_name, self.file_name)
+        ####### 重置文件区 #######
         if '异常' not in res_status:
+            # 删除旧文件
             os.system('rm -rf %s' % (self.today_file_path))
             try:
                 df = pd.read_excel('%s' %(self.yes_file_path))
@@ -149,7 +166,7 @@ class Get_ASM_Consume:
             run_num = 1
             offset_num = 0
             while True:
-                url = "https://app.searchads.apple.com/cm/api/v4/budgetorders/find"
+                url = "https://app-ads.apple.com/cm/api/v4/budgetorders/find"
                 # payload = {
                 #     "selector":
                 #         {
@@ -204,7 +221,7 @@ class Get_ASM_Consume:
                         advertiser_or_product = i['bo']['clientName']  # 公司名称
                         budget_name = i['bo']['name']  # 备注名称
                         if budget_name[:7] != '1317320':
-                            print('获取第【%s】页【%s】的相关数据...' % (int(offset_num / 50 + 1), budget_order_id))
+                            print('获取【%s】第【%s】页【%s】的相关数据...' % (company_name, int(offset_num / 50 + 1), budget_order_id))
 
                             # 开始请求详细数据；
                             url = 'https://app.searchads.apple.com/cm/api/v4/budgetorders/%s' % (budget_order_id)
@@ -272,7 +289,8 @@ class Get_ASM_Consume:
                     break
 
             # 存为实例Excel；
-            today_credits_num = self.asm_credits()
+            today_credits_info = self.asm_credits(money_type)
+            today_credits_num = today_credits_info[0]
             print('当前账户可用信用额度：', today_credits_num)
             df_new = df_new.append(pd.DataFrame({
                 '账单ID': [int(self.defOrg_id)],
@@ -293,9 +311,9 @@ class Get_ASM_Consume:
                 yes_run_num = '空'
                 now_yue_days = '∞∞∞'
             # 加入推送列表；
-            push_title = '七麦科技-ASM账户总可用信用额度监控'
+            push_title = '%s-ASM账户总可用信用额度监控' %(company_name)
             asm_link = 'https://app.searchads.apple.com/cm/app/settings/billing/loc'
-            push_text = "### %s-七麦科技-ASM信用额度提醒 \n\n**今日可用的信用额度**：[%s(USD)](%s)\n\n**昨日可用的信用额度**：%s(USD)\n\n**昨日消耗信用额度**：%s(USD)\n\n**预估剩余可用天数**：**%s天**" % (self.today_date, round(today_credits_num, 2), asm_link, round(yes_credits_num, 2), yes_run_num, now_yue_days)
+            push_text = "### %s-%s-ASM信用额度提醒 \n\n**今日可用的信用额度**：[%s(%s)](%s)\n\n**昨日可用的信用额度**：%s(%s)\n\n**昨日消耗信用额度**：%s(%s)\n\n**预估剩余可用天数**：**%s天**" % (self.today_date, company_name, round(today_credits_num, 2), today_credits_info[1], asm_link, round(yes_credits_num, 2), today_credits_info[1], yes_run_num, today_credits_info[1], now_yue_days)
             push_text_list.append([push_title, push_text])
             # 完毕后读取当前数据进行去重，
             df_new.drop_duplicates(['账单ID', '日期', '消耗总额'], keep='last', inplace=True)
@@ -314,16 +332,10 @@ class Get_ASM_Consume:
             for push_info in push_text_list:
                 DingDing_Push(push_info[0], *[push_info[1]], push_url=self.push_url).app_args_markdown_push()
                 time.sleep(5)
-
         else:
-            # 失败推送；
-            push_title = '%s_ASM余额监控任务' %(self.today_date)
-            dingding_push = DingDing_Push(push_title)
-            dingding_push.push_status = '登陆失败，无法正常获取token'
-            dingding_push.status_push()
-            return '...登陆异常，请重试...'
+            ...
 
-    def get_soid_token(self, company_name):
+    def get_soid_token(self, company_name, get_type='soid'):
         url = 'https://app-ads.apple.com/cm/api/v1/startup/orgs'
         headers = {
             'Host': 'app-ads.apple.com',
@@ -335,6 +347,8 @@ class Get_ASM_Consume:
         res = session.get(url, headers=headers)
         for org_info in res.json()['data']['orgDetails']:
             if org_info['name'] == company_name:
+                if get_type == "orgid":
+                    self.defOrg_id = org_info['id']
                 s = requests.cookies.RequestsCookieJar()
                 s.set('searchads.soid', org_info['id'])
                 session.cookies.update(s)
@@ -412,7 +426,20 @@ class Get_ASM_Consume:
                 break
         return res_list
 
-    def get_plan_status(self, soid, start_date=today_date-datetime.timedelta(6), end_date=today_date):
+    def get_plan_status(self, soid, start_date=today_date-datetime.timedelta(6), end_date=today_date, timezone='UTC'):
+        """
+            * timezone代表时区，默认UTC，可改ORTZ(亚洲上海)
+        Parameters
+        ----------
+        soid
+        start_date
+        end_date
+        timezone
+
+        Returns
+        -------
+
+        """
         s = requests.cookies.RequestsCookieJar()
         s.set('searchads.soid', str(soid))
         session.cookies.update(s)
@@ -433,7 +460,7 @@ class Get_ASM_Consume:
                 "filter": {
                     "startTime": str(start_date),
                     "endTime": str(end_date),
-                    "timeZone": "UTC",
+                    "timeZone": timezone,
                     "returnGrandTotals": True,
                     "returnRowTotals": True,
                     "selector": {
@@ -452,13 +479,31 @@ class Get_ASM_Consume:
                 }
             }
             res = session.post(url, data=json.dumps(payload), headers=headers, verify=False)
-            print(res.json())
-            if len(res.json()['data']['row']) > 0:
-                res_list.append(res.json())
-                offset_num += 50
-            else:
+            try:
+                if len(res.json()['data']['row']) > 0:
+                    res_list.append(res.json())
+                    offset_num += 50
+                else:
+                    break
+            except:
+                print('当前【%s】账户获取【%s】页失败，重试中...' %(soid, offset_num))
+                print(res.json())
                 break
         return res_list
+
+    def get_ads_id(self, company_name=''):
+        if len(company_name) > 0:
+            self.get_soid_token(company_name)
+        url = 'https://app-ads.apple.com/cm/api/v1/startup/orgs'
+        headers = {
+            'Host': 'app-ads.apple.com',
+            'Connection': 'keep-alive',
+            'Content-Type': 'application/json',
+            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.67',
+            'X-XSRF-TOKEN-CM': self.res_token_cm
+        }
+        res = session.get(url, headers=headers, verify=False)
+        return res.json()
 
 
 # 封装获取账单的脚本；

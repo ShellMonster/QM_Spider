@@ -1529,7 +1529,7 @@ class Get_App_Keyword:
         self.search_appKeyword_data = res.json()
         return self.search_appKeyword_data
 
-    def get_AnalysisDataKeyword(self, start_date, end_date, keyword_hot_start=4605):
+    def get_AnalysisDataKeyword(self, keyword_hot_start=4605):
         """
             * 获取时间段内关键词覆盖数量历史：
             * 此项支持多个档位，具体参考官网区间；
@@ -1537,8 +1537,6 @@ class Get_App_Keyword:
             :param end_date: 结束日期
             :param keyword_hot_start: 起始热度：默认4605
         """
-        self.start_date = start_date
-        self.end_date = end_date
         url = 'https://api.qimai.cn/account/getAnalysisDataKeyword?appid=%s&country=%s&device=%s&sdate=%s&edate=%s&version=%s&hints=%s' %(self.appid, self.country, self.device, self.start_date, self.end_date, self.version, keyword_hot_start)
         res = session.get(url, headers=headers)
         self.app_AnalysisDataKeyword = res.json()
@@ -1598,6 +1596,21 @@ class Get_App_Keyword:
                         return '未知'
         else:
             return '未知'
+
+    def get_asa_keyword(self, run_date=today_date):
+        """
+            * 获取产品的ASA竞价词数量；
+            * 此处需要在此函数内指定获取的时间，默认为当天；
+        """
+        url = 'https://api.qimai.cn/asm/keywordSummary?app_id=%s&country=%s&date=%s' %(self.appid, self.country, run_date)
+        res = session.get(url, headers=headers)
+        if res.json()['msg'] == '成功':
+            return res.json()
+        else:
+            return {}
+
+    def get_asa_keywordTrend(self):
+        url = 'https://api.qimai.cn/asm/appWordStat?appid=%s&country=%s&sdate=%s&edate=2021-07-22' %(self.appid, self.country, )
 
     def get_keywordDetail_to_df(self, page_num='1', hints_min='', hints_max='', ranking_min='', ranking_max='', result_min='', result_max='', search='', size='100'):
         """
