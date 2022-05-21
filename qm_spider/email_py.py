@@ -33,6 +33,10 @@ class Send_Mail:
 
         if '@qimai.cn' in self.send_user:
             server = zmail.server(self.send_user, self.send_userpwd, smtp_host='smtp.exmail.qq.com', smtp_port=465)
+        elif '@geekaso.com' in self.send_user:
+            server = zmail.server(self.send_user, self.send_userpwd, smtp_host='smtp.exmail.qq.com', smtp_port=465)
+        elif 'admobile.top' in self.send_user:
+            server = zmail.server(self.send_user, self.send_userpwd, smtp_host='smtp.exmail.qq.com', smtp_port=465)
         else:
             server = zmail.server(self.send_user, self.send_userpwd)
 

@@ -51,10 +51,10 @@ one_day = datetime.timedelta(days=1)
 
 # 请求头；
 headers = {
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36 Edg/88.0.705.81"
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36 Edg/92.0.902.84"
 }
 headers_post = {
-    'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.72 Safari/537.36 Edg/90.0.818.41',
+    'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36 Edg/92.0.902.84',
     'Content-Type': 'application/x-www-form-urlencoded'
 }
 
@@ -215,10 +215,20 @@ class Sing_Qimai:
             * 自动登录七麦数据：
             账号密码需要在类中指定；
         """
-        url = 'https://api.qimai.cn/account/signinForm'
+        url = 'https://api.qimai.cn/accountV1/login'
         payload = "username=%s&password=%s" %(self.user_id, self.user_pwd)
         res = session.post(url, headers=headers_post, data=payload)
-        return res.json()
+        return res.json(),session
+
+    def login_appsa(self):
+        """
+            * 自动登录AppSA:
+            账号密码需要在类中指定；
+        """
+        url = 'https://api.appsa.com/asa/login'
+        payload = "username=%s&password=%s" %(self.user_id, self.user_pwd)
+        res = session.post(url, headers=headers_post, data=payload)
+        return res.json(),session
 
 # 图床工具；
 class Image_Upload_Url:
@@ -331,7 +341,9 @@ class Qimai_Outside_Tool:
         """
             * 匹配开发者是否为公司账号(自带匹配库)；
         """
-        company_str_list = ['公司', 'Technology', 'Beijing', '(', ')', '（', '）', 'Ltd', '.', 'Inc', 'china', '互联网', '科技', '网络', '计算机', 'LLC', '-', 'Company', 'games', '工作室', 'Tech', '信息', 'online', 'Network', '互动', '移动', '游戏', '技术', 'LIMITED', '株式会社', 'Tov', 'USA', 'UK', '银行', '组织', '机构']
+        company_str_list = ['Mobile', '移动', '公司', 'Technology', 'Beijing', '(', ')', '（', '）', 'Ltd', '.', 'Inc', 'china', '互联网', '科技', '网络', '计算机', 'LLC', '-', 'App', '&', 'かぶしき', 'Company', 'games', '工作室', 'Tech', '信息', 'online', 'Network', '互动', '移动', '游戏', '技术', 'LIMITED', '株式会社', 'Tov', 'USA', 'UK', '银行', '组织', '机构']
+        if ' ' not in self.data_info[0] or self.data_info[0].count(' ') >=2:
+            return True
         for company_str in company_str_list:
             if company_str.lower() in self.data_info[0].lower() or len(self.data_info[0])>20:
                 return True
@@ -1190,7 +1202,7 @@ class Get_Keyword_Info:
         headers = {
             'origin': 'https://www.qimai.cn',
             'referer': 'https://www.qimai.cn/',
-            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_1_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36 Edg/88.0.705.63'
+            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36 Edg/92.0.902.84'
         }
         res = session.get(url, headers=headers)
         self.keyword_search_index = res.json()
@@ -1209,7 +1221,7 @@ class Get_Keyword_Info:
             headers = {
                 'origin': 'https://www.qimai.cn',
                 'referer': 'https://www.qimai.cn/',
-                'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_1_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36 Edg/88.0.705.63'
+                'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36 Edg/92.0.902.84'
             }
             res = session.get(url, headers=headers)
             self.keyword_search_more_list.append(res.json())
@@ -1228,7 +1240,7 @@ class Get_Keyword_Info:
         headers = {
             'origin': 'https://www.qimai.cn',
             'referer': 'https://www.qimai.cn/',
-            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_1_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36 Edg/88.0.705.63'
+            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36 Edg/92.0.902.84'
         }
         res = session.get(url, headers=headers)
         self.keyword_WordInfo = res.json()
@@ -1440,29 +1452,8 @@ class Get_App_Keyword:
             * 默认获取日期为当日；
         """
         url = 'https://api.qimai.cn/appDetail/keywordDetail'
-        payload = {
-          'country': self.country,
-          'sdate': self.start_date,
-          'edate': self.end_date,
-          'appid': self.appid,
-          'version': self.version,
-          'device': self.device,
-          'hints_min': hints_min,
-          'hints_max': hints_max,
-          'ranking_min': ranking_min,
-          'ranking_max': ranking_max,
-          'result_min': result_min,
-          'result_max': result_max,
-          'search': search,
-          'quick_rank': 'all',
-          'type': 'all',
-          'page': page_num,
-          'size': size,
-          'sort': 'srank',
-          'sort_type': 'asc',
-          'trigger': ''
-        }
-        res = session.post(url, headers=headers, data=payload)
+        payload = 'country=%s&sdate=%s&edate=%s&appid=%s&version=%s&device=%s&hints_min=%s&hints_max=%s&ranking_min=%s&ranking_max=%s&result_min=%s&result_max=%s&search=%s&quick_rank=all&type=all&page=%s&size=%s&sort=srank&sort_type=asc&trigger=' %(self.country, self.start_date, self.end_date, self.appid, self.version, self.device, hints_min, hints_max, ranking_min, ranking_max, result_min, result_max, search, page_num, size)
+        res = session.post(url, headers=headers_post, data=payload)
         self.app_keywordDetail = res.json()
         return self.app_keywordDetail
 

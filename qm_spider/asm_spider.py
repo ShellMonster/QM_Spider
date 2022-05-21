@@ -42,7 +42,6 @@ class Get_ASM_Consume:
         headers = {
             'Accept': 'application/json, text/javascript, */*; q=0.01',
             'X-Apple-Widget-Key': self.X_Apple_Widget_Key,
-            'X-Requested-With': 'XMLHttpRequest',
             'Content-Type': 'application/json',
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.87 Safari/537.36"
         }
@@ -55,12 +54,6 @@ class Get_ASM_Consume:
 
             # 模拟登陆；
             url = 'https://appleid.apple.com/widget/account/repair?trustedWidgetDomain=https%3A%2F%2Fidmsa.apple.com&widgetKey=a01459d797984726ee0914a7097e53fad42b70e1f08d09294d14523a1d4f61e1&rv=1&language=zh_CN_CHN'
-            headers = {
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-                'Connection': 'keep-alive',
-                'Host': 'appleid.apple.com',
-                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.3'
-            }
             res = session.get(url, headers=headers, verify=False)
             if res.status_code == 200:
                 print('...模拟访问网页成功...')
@@ -69,30 +62,17 @@ class Get_ASM_Consume:
                 url = 'https://idmsa.apple.com/appleauth/auth/repair/complete'
                 headers = {
                     'Accept': 'application/json;charset=utf-8',
-                    'Connection': 'keep-alive',
                     'Content-Type': 'application/json',
-                    'Host': 'idmsa.apple.com',
                     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36',
                     'scnt': scnt,
                     'X-Apple-Repair-Session-Token': X_Apple_Session_Token,
                     'X-Apple-ID-Session-Id': X_Apple_ID_Session_Id,
-                    ''
                     'X-Apple-Widget-Key': self.X_Apple_Widget_Key,
-                    'X-Requested-With': 'XMLHttpRequest'
                 }
                 res = session.post(url, headers=headers, verify=False)
                 print('...模拟登陆网页成功...')
                 if res.status_code == 204:
                     url = 'https://app-ads.apple.com/cm/api/v1/startup'
-                    headers = {
-                        'Accept': 'application/json, text/javascript, */*; q=0.01',
-                        'Connection': 'keep-alive',
-                        'Content-Type': 'application/json',
-                        'Host': 'app-ads.apple.com',
-                        'Referer': 'https://appleid.apple.com/widget/account/repair?trustedWidgetDomain=https%3A%2F%2Fidmsa.apple.com&widgetKey=a01459d797984726ee0914a7097e53fad42b70e1f08d09294d14523a1d4f61e1&rv=1&language=zh_CN_CHN',
-                        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
                     res = session.get(url, headers=headers, verify=False)
                     self.defOrg_id = res.json()['data']['userDetails']['defOrg']
                     if res.status_code == 200:
@@ -154,7 +134,7 @@ class Get_ASM_Consume:
         self.today_file_path = '%s%s_%s-%s' %(self.file_path, self.today_date, company_name, self.file_name)
         ####### 重置文件区 #######
         if '异常' not in res_status:
-            # 删除旧文件
+            # 删除旧文件；
             os.system('rm -rf %s' % (self.today_file_path))
             try:
                 df = pd.read_excel('%s' %(self.yes_file_path))
@@ -220,6 +200,8 @@ class Get_ASM_Consume:
                         budget_order_id = i['bo']['id']
                         advertiser_or_product = i['bo']['clientName']  # 公司名称
                         budget_name = i['bo']['name']  # 备注名称
+                        if len(str(company_name)) == 0:
+                            company_name = self.get_orgid_companyName(i['bo']['parentOrgId'])
                         if budget_name[:7] != '1317320':
                             print('获取【%s】第【%s】页【%s】的相关数据...' % (company_name, int(offset_num / 50 + 1), budget_order_id))
 
@@ -264,7 +246,7 @@ class Get_ASM_Consume:
                                     if now_yue_days <= 7:  # 小于等于7则推送，否则不管；
                                         print('当前【%s】符合，加入待推送列表...' % (budget_order_id))
                                         push_title = "【%s】%s" % (advertiser_or_product, 'ASM账户余额推送'),
-                                        push_text = "**当前日期**：%s\n\n**账户备注名**：%s(%s)\n\n**账户公司名**：%s\n\n**昨日消耗**：%s\n\n**累计消耗**：%s\n\n**限制消耗金额**：%s\n\n**预估剩余消耗天数**：**%s天**\n\n**时间区间**：%s至%s\n\n**账号组别**：%s\n\n " % (self.today_date, budget_name, budget_order_status, advertiser_or_product, yes_run_num, spent_value, budget_amount, now_yue_days, start_date, end_date, campaign_group)
+                                        push_text = "**当前日期**：%s\n\n**账户备注名**：%s(%s)\n\n**账户公司名**：%s\n\n**归属账号**：%s\n\n**昨日消耗**：%s\n\n**累计消耗**：%s\n\n**限制消耗金额**：%s\n\n**预估剩余消耗天数**：**%s天**\n\n**时间区间**：%s至%s\n\n**账号组别**：%s\n\n " % (self.today_date, budget_name, budget_order_status, advertiser_or_product, company_name, yes_run_num, spent_value, budget_amount, now_yue_days, start_date, end_date, campaign_group)
                                         # DingDing_Push(push_title, *[push_text], push_url=self.push_url).app_args_markdown_push()
                                         push_text_list.append([push_title, push_text])
                                         # 推送成功，进行下一步；
@@ -355,6 +337,11 @@ class Get_ASM_Consume:
                 break
         return session
 
+    def get_orgid_companyName(self, orgid):
+        url = 'https://app.searchads.apple.com/cm/api/v1/orgs/%s' %(orgid)
+        res = session.get(url, headers=headers)
+        return res.json()['name']
+
     def get_asm_fileList(self, company_name=''):
         """
             * 获取中国区ASA账号上提交的资料列表及数据；
@@ -362,39 +349,52 @@ class Get_ASM_Consume:
         if len(company_name) > 0:
             self.get_soid_token(company_name)
         url = 'https://app-ads.apple.com/cm/api/v1/doc/find'
-        offset_num = 0
-        res_list = []
-        fileid_list = []
-        while True:
-            print('正在获取第【%s】页的上传文件列表' %(int(offset_num/50+1)))
-            payload = {
-                "orderBy": [
-                    {
-                        "field": "modificationTime",
-                        "sortOrder": "DESCENDING"
-                    }
-                ],
-                "pagination": {
-                    "offset": offset_num,
-                    "limit": 1000
-                }
-            }
-            headers = {
-                'Host': 'app-ads.apple.com',
-                'Connection': 'keep-alive',
-                'Content-Type': 'application/json;charset=UTF-8',
-                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36',
-                'X-XSRF-TOKEN-CM': self.res_token_cm
-            }
-            res = session.post(url, headers=headers, data=json.dumps(payload), verify=False)
-            if len(res.json()['data']) > 0 and res.json()['data'][0]['id'] not in fileid_list:
-                file_list = [i['id'] for i in res.json()['data']]
-                fileid_list += file_list
-                res_list.append(res.json())
-                offset_num += 50
-            else:
-                break
-        return res_list
+        # payload = {"conditions":[{"field":"approvalType","operator":"IN","values":["ACCOUNT"]}],"fields":["state"]}
+        payload = {"orderBy": [{"field": "modificationTime", "sortOrder": "DESCENDING"}]}
+        headers = {
+            'Host': 'app-ads.apple.com',
+            'Connection': 'keep-alive',
+            'Content-Type': 'application/json;charset=UTF-8',
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36',
+            'X-XSRF-TOKEN-CM': self.res_token_cm
+        }
+        res = session.post(url, headers=headers, data=json.dumps(payload), verify=False)
+        return res.json()
+
+        # 老版本：
+        # offset_num = 0
+        # res_list = []
+        # fileid_list = []
+        # while True:
+        #     print('正在获取第【%s】页的上传文件列表' %(int(offset_num/50+1)))
+        #     payload = {
+        #         "orderBy": [
+        #             {
+        #                 "field": "modificationTime",
+        #                 "sortOrder": "DESCENDING"
+        #             }
+        #         ],
+        #         "pagination": {
+        #             "offset": offset_num,
+        #             "limit": 1000
+        #         }
+        #     }
+        #     headers = {
+        #         'Host': 'app-ads.apple.com',
+        #         'Connection': 'keep-alive',
+        #         'Content-Type': 'application/json;charset=UTF-8',
+        #         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36',
+        #         'X-XSRF-TOKEN-CM': self.res_token_cm
+        #     }
+        #     res = session.post(url, headers=headers, data=json.dumps(payload), verify=False)
+        #     if len(res.json()['data']) > 0 and res.json()['data'][0]['id'] not in fileid_list:
+        #         file_list = [i['id'] for i in res.json()['data']]
+        #         fileid_list += file_list
+        #         res_list.append(res.json())
+        #         offset_num += 50
+        #     else:
+        #         break
+        # return res_list
 
     def get_asm_resStatus(self, company_name=''):
         """
@@ -403,9 +403,7 @@ class Get_ASM_Consume:
         if len(company_name) > 0:
             self.get_soid_token(company_name)
         url = 'https://app-ads.apple.com/cm/api/v1/approval/find'
-        offset_num = 0
-        res_list = []
-        appid_list = []
+        payload = {"orderBy":[{"field":"modificationTime","sortOrder":"DESCENDING"}]}
         headers = {
             'Host': 'app-ads.apple.com',
             'Connection': 'keep-alive',
@@ -413,32 +411,30 @@ class Get_ASM_Consume:
             'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.67',
             'X-XSRF-TOKEN-CM': self.res_token_cm
         }
-        while True:
-            print('正在获取第【%s】页的APP审核信息列表' %(int(offset_num/50+1)))
-            payload = {"pagination":{"offset":offset_num,"limit":100}}
-            res = session.post(url, headers=headers, data=json.dumps(payload), verify=False)
-            if len(res.json()['data']) > 0 and res.json()['data'][0] not in appid_list:
-                app_list = [i for i in res.json()['data']]
-                appid_list += app_list
-                res_list.append(res.json())
-                offset_num += 50
-            else:
-                break
-        return res_list
+        res = session.post(url, headers=headers, data=json.dumps(payload), verify=False)
+        return res.json()
+
+        # 老版本：
+        # offset_num = 0
+        # res_list = []
+        # appid_list = []
+        # res_list.append(res.json())
+        # print(res.json())
+        # while True:
+        #     print('正在获取第【%s】页的APP审核信息列表' %(int(offset_num/50+1)))
+        #     payload = {"pagination":{"offset":offset_num,"limit":100}}
+        #     res = session.post(url, headers=headers, data=json.dumps(payload), verify=False)
+        #     if len(res.json()['data']) > 0 and res.json()['data'][0] not in appid_list:
+        #         app_list = [i for i in res.json()['data']]
+        #         appid_list += app_list
+        #         res_list.append(res.json())
+        #         offset_num += 50
+        #     else:
+        #         break
 
     def get_plan_status(self, soid, start_date=today_date-datetime.timedelta(6), end_date=today_date, timezone='UTC'):
         """
             * timezone代表时区，默认UTC，可改ORTZ(亚洲上海)
-        Parameters
-        ----------
-        soid
-        start_date
-        end_date
-        timezone
-
-        Returns
-        -------
-
         """
         s = requests.cookies.RequestsCookieJar()
         s.set('searchads.soid', str(soid))
@@ -513,14 +509,17 @@ class Get_ASM_Bill(Get_ASM_Consume):
         self.start_date, self.end_date = Qimai_Outside_Tool(*[start_date, end_date]).get_month_time()
         self.file_path = self.file_path if self.file_path[-1] == '/' else self.file_path + '/'
 
-    def asm_bill(self):
+    def asm_bill(self, company_name=''):
         self.asm_login()
         self.file_path = self.file_path if self.file_path[-1]=='/' else self.file_path+'/'
+        if len(company_name) > 0:
+            self.get_soid_token(company_name)
         run_num = 1
         offset_num = 0
         df = pd.DataFrame({})
         while True:
-            url = 'https://app.searchads.apple.com/cm/api/v1/locinvoicesummary'
+            # url = 'https://app.searchads.apple.com/cm/api/v1/locinvoicesummary'
+            url = 'https://app.searchads.apple.com/cm/api/v1/locinvoicesummary/details'
             headers = {
                 'Host': 'app-ads.apple.com',
                 'Connection': 'keep-alive',
@@ -532,34 +531,65 @@ class Get_ASM_Bill(Get_ASM_Consume):
             res = session.post(url, data=json.dumps(payload), headers=headers, verify=False)
             if len(res.json()['data']) > 0:
                 for bill_info in res.json()['data']:
-                    orgId = bill_info['orgId']
-                    amount = bill_info['amount']['amount']
-                    currencyCode = bill_info['amount']['currencyCode']
-                    orderNumber = bill_info['orderNumber']
-                    budgetOrderName = bill_info['budgetOrderName']
-                    invoiceSummaryDate = bill_info['invoiceSummaryDate']
-                    paymentDueDate = bill_info['paymentDueDate']
-                    downloadDate = bill_info['downloadDate']
-                    summaryType = bill_info['summaryType']
-                    advertiser = bill_info['advertiser']
-                    paymentReferenceId = bill_info['paymentReferenceId']
-                    billingPeriod = bill_info['billingPeriod']
-                    print('获取第【%s】页总第【%s】条【%s】的相关数据...' % (int(offset_num / 10 + 1), run_num, advertiser))
+                    # orgId = bill_info['orgId']
+                    # amount = bill_info['amount']['amount']
+                    # currencyCode = bill_info['amount']['currencyCode']
+                    # orderNumber = bill_info['orderNumber']
+                    # budgetOrderName = bill_info['budgetOrderName']
+                    # invoiceSummaryDate = bill_info['invoiceSummaryDate']
+                    # paymentDueDate = bill_info['paymentDueDate']
+                    # downloadDate = bill_info['downloadDate']
+                    # summaryType = bill_info['summaryType']
+                    # advertiser = bill_info['advertiser']
+                    # paymentReferenceId = bill_info['paymentReferenceId']
+                    # billingPeriod = bill_info['billingPeriod']
 
+                    # try:
+                    #     advertiser = bill_info['advertiser']
+                    # except:
+                    #     advertiser = ''
+                    # try:
+                    #     totalAmount = bill_info['totalAmount']['amount']
+                    # except:
+                    #     totalAmount = ''
+
+                    try:
+                        advertiser = bill_info['advertiser']
+                    except:
+                        advertiser = ''
+                    print('获取第【%s】页总第【%s】条【%s】的相关数据...' % (int(offset_num / 10 + 1), run_num, advertiser))
                     df = df.append(pd.DataFrame({
-                        'billingPeriod': [billingPeriod],
-                        'paymentReferenceId': [paymentReferenceId],
-                        'orgId': [orgId],
-                        'orderNumber': [orderNumber],
-                        'advertiser': [advertiser],
-                        'budgetOrderName': [budgetOrderName],
-                        'amount': [amount],
-                        'currencyCode': [currencyCode],
-                        'invoiceSummaryDate': [invoiceSummaryDate],
-                        'paymentDueDate': [paymentDueDate],
-                        'downloadDate': [downloadDate],
-                        'summaryType': [summaryType]
+                        'Orgid': [bill_info['orgId']],
+                        '总计': [bill_info['totalAmount']['amount']],
+                        '总计货币': [bill_info['totalAmount']['currencyCode']],
+                        '税费': [bill_info['taxes']['amount']],
+                        '税费货币': [bill_info['taxes']['currencyCode']],
+                        '小计': [bill_info['subTotal']['amount']],
+                        '小计货币': [bill_info['subTotal']['currencyCode']],
+                        '账单': [bill_info['qNumber']],
+                        '预算订单': [bill_info['orderNumber']],
+                        '描述': [bill_info['budgetOrderName']],
+                        '截止日期': [bill_info['paymentDueDate']],
+                        '结算期': [bill_info['billingPeriod']],
+                        '付款参考编号': [bill_info['paymentReferenceId']],
+                        '产品或广告主': [advertiser]
                     }))
+
+
+                    # df = df.append(pd.DataFrame({
+                    #     'billingPeriod': [billingPeriod],
+                    #     'paymentReferenceId': [paymentReferenceId],
+                    #     'orgId': [orgId],
+                    #     'orderNumber': [orderNumber],
+                    #     'advertiser': [advertiser],
+                    #     'budgetOrderName': [budgetOrderName],
+                    #     'amount': [amount],
+                    #     'currencyCode': [currencyCode],
+                    #     'invoiceSummaryDate': [invoiceSummaryDate],
+                    #     'paymentDueDate': [paymentDueDate],
+                    #     'downloadDate': [downloadDate],
+                    #     'summaryType': [summaryType]
+                    # }))
 
                     # 运行次数加 1；
                     run_num += 1

@@ -608,6 +608,7 @@ class Pie_Py:
         )
         return c
 
+# 散点图；
 class Scatter_Py:
     def __init__(self, title, x_value, y_name, y_value, *args, pos_left="center", legend_icon='roundRect', subtitle='', is_show=False):
         self.is_show = is_show
@@ -815,4 +816,99 @@ class WordCloud_Py:
             title_opts=opts.TitleOpts(title=self.title),
             legend_opts=opts.LegendOpts(is_show=self.is_show)
         )
+        return c
+
+# 盒形图、箱型图；
+class Box_Py:
+    def __init__(self, title, x_value, y_name, y_value, *args, pos_top='top', is_zoom=False, boundary_gap=False, is_orient='horizontal', y_is_inverse=False, x_is_inverse=False, legend_icon='roundRect', subtitle='', is_symbol_show=False, line_width=2, is_show=False, color_list=['#00b088', '#f76b61', '#ffb55d', '#8470ff', '#00a2ff', '#ffe400', '#11d2c2', '#c263f9']):
+        """
+            * 若是有args传参，参数示例：*[['1', '2', '3'], [[136,176, 177], [209, 163, 223], [244, 235, 321]]；
+            * 第一个列表是Y轴的数据名称列表，第二个列表是每个Y轴对应的数据；
+        """
+        self.pos_top = pos_top
+        self.legend_icon = legend_icon
+        self.is_zoom = is_zoom
+        self.is_orient = is_orient
+        self.subtitle = subtitle
+        self.is_symbol_show = is_symbol_show
+        self.line_width = line_width
+        self.is_show = is_show
+        self.color_list = color_list
+        self.args = args
+        self.title = title
+        self.x_value = [str(i) for i in x_value]
+        self.y_name = y_name
+        self.y_value = [float(i) for i in y_value]
+        self.y_is_inverse = y_is_inverse
+        self.x_is_inverse = x_is_inverse
+        self.boundary_gap = boundary_gap
+        if self.y_is_inverse == True:
+            self.y_min = 1
+            self.y_max = None
+        else:
+            self.y_min = None
+            self.y_max = 'dataMax'
+        if self.x_is_inverse == True:
+            self.x_min = 1
+        else:
+            self.x_min = None
+
+    def box_render_air(self):
+        c = Line()
+        c.add_xaxis(self.x_value)
+        c.add_yaxis(
+            series_name=self.y_name,
+            y_axis = self.y_value,
+            is_symbol_show=self.is_symbol_show,
+            linestyle_opts=opts.LineStyleOpts(width=self.line_width),
+            label_opts=opts.LabelOpts(is_show=self.is_show)
+        )
+        c.set_global_opts(
+            title_opts=opts.TitleOpts(title=self.title, subtitle=self.subtitle),
+            tooltip_opts=opts.TooltipOpts(trigger="axis"),
+            legend_opts=opts.LegendOpts(pos_left="center", pos_top=self.pos_top, legend_icon=self.legend_icon),
+            datazoom_opts=opts.DataZoomOpts(
+                is_show=self.is_zoom,
+                range_start=0,
+                range_end=100,
+                orient=self.is_orient  # 表示横轴可滑动还是纵轴可滑动；
+            ),
+            yaxis_opts=opts.AxisOpts(
+                type_="value",
+                max_=self.y_max,
+                min_=self.y_min,
+                boundary_gap=self.boundary_gap,  # 封闭坐标轴，左右都有顶上的刻度线；
+                axislabel_opts=opts.LabelOpts(color="#7D7D7D"),
+                axisline_opts=opts.AxisLineOpts(
+                    linestyle_opts=opts.LineStyleOpts(width=1.5, color="#A0A7B3")
+                ),
+                axistick_opts=opts.AxisTickOpts(is_show=True, is_inside=True),
+                splitline_opts=opts.SplitLineOpts(
+                    is_show=True, linestyle_opts=opts.LineStyleOpts(color="#E2E2E2")
+                ),  # 设置网格线；
+            ),
+            xaxis_opts=opts.AxisOpts(
+                type_="category",
+                min_=self.x_min,
+                boundary_gap=self.boundary_gap,
+                axislabel_opts=opts.LabelOpts(color="#7D7D7D"),
+                axisline_opts=opts.AxisLineOpts(
+                    linestyle_opts=opts.LineStyleOpts(width=1.5, color="#A0A7B3")
+                ),
+                axistick_opts=opts.AxisTickOpts(is_show=True, is_inside=True),
+                splitline_opts=opts.SplitLineOpts(
+                    is_show=True, linestyle_opts=opts.LineStyleOpts(color="#E2E2E2")
+                ),
+            ),
+        )
+        if len(self.args) > 0:
+            for num in range(len(self.args[0])):
+                c.add_yaxis(
+                    series_name = self.args[0][num],
+                    y_axis = self.args[1][num],
+                    is_symbol_show=self.is_symbol_show,
+                    linestyle_opts=opts.LineStyleOpts(width=self.line_width),
+                    label_opts=opts.LabelOpts(is_show=self.is_show)
+                )
+        self.c_render = c
         return c

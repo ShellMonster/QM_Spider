@@ -110,7 +110,7 @@ class Calc_Keyword_Expand:
         df_new.to_excel('./%s_关键词扩展性计算.xlsx' % (app_name), index=False)
 
 # 分词算法汇总；
-@qm_auth_check  # 登录检查；
+# @qm_auth_check  # 登录检查；
 class Jieba_Word_algorithm:
     def __init__(self, keyword_list):
         self.keyword_list = keyword_list
@@ -177,7 +177,7 @@ class Jieba_Word_algorithm:
             else:
                 # 剩余字符多则随意抽取；
                 now_word = random.choice(self.keyword_list)
-                if now_word not in now_keyword_list and len(now_word)>1:  # 存在就跳过；
+                if now_word not in now_keyword_list and len(now_word) > 1:  # 存在就跳过；
                     for i in range(len(now_word)-1, 0, -1):  # 此处算法旨在缩减AB、BC关键词为ABC组合
                         # print(word_itc, now_word, i, -i)
                         if len(word_itc)==0:
@@ -342,7 +342,7 @@ class Generate_100_Keyword:
         self.user_ky_list = user_ky_list
         self.spare_keyword_df = pd.DataFrame({})
 
-    def generate_correlation_main(self, range_num=7, run_type='生成'):
+    def generate_correlation_main(self, range_num=7, run_type='生成', filter_en=False):
         for keyword in self.user_ky_list:
             keyword_info_list = Get_Keyword_Info(keyword).get_keyword_extend(max_index=200, orderBy='relate', order='desc')
             for info_list in keyword_info_list:
@@ -352,6 +352,8 @@ class Generate_100_Keyword:
                     hints = keyword_info['hints']
                     search_no = keyword_info['search_no']
 
+                    if filter_en == True and len(Qimai_Outside_Tool(word).match_chinese_text()) <= 0:
+                        continue  # 如果要过滤不包含中文的，就判定是，并且确实没有中文；
                     if run_type == '生成':
                         if int(relate) > 50 and int(hints) > 4605 and int(search_no) > 0 and len(word) <= 5:
                             self.spare_keyword_df = self.spare_keyword_df.append(pd.DataFrame({
@@ -363,14 +365,15 @@ class Generate_100_Keyword:
                             }))
                             print('当前已匹配【%s】个关键词【%s - %s】，尚未去重' %(self.spare_keyword_df.shape[0], word, hints))
                     elif run_type == '导出':
-                        self.spare_keyword_df = self.spare_keyword_df.append(pd.DataFrame({
-                            '关键词': [word],
-                            '指数': [hints],
-                            '结果数': [search_no],
-                            '相关度': [relate],
-                            '来自词': [keyword]
-                        }))
-                        print('当前已匹配【%s】个关键词【%s - %s】，尚未去重' % (self.spare_keyword_df.shape[0], word, hints))
+                        if int(relate) > 50 and int(hints) > 4605 and int(search_no) > 0 and len(word) <= 5:
+                            self.spare_keyword_df = self.spare_keyword_df.append(pd.DataFrame({
+                                '关键词': [word],
+                                '指数': [hints],
+                                '结果数': [search_no],
+                                '相关度': [relate],
+                                '来自词': [keyword]
+                            }))
+                            print('当前已匹配【%s】个关键词【%s - %s】，尚未去重' % (self.spare_keyword_df.shape[0], word, hints))
                     else:
                         print('run_type传参错误，请重试')
                         exit()
